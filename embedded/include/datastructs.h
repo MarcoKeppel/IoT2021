@@ -8,13 +8,21 @@
 #define MAX_SLAVE_SENSORS_N 8
 
 
+enum sensor_type { analog, digital, i2c };
+enum sensor_val_type { v_int, v_uint, v_real, v_bool };
+
+typedef sensor_type sensor_type_t;
+typedef sensor_val_type sensor_val_type_t;
+
+
 typedef struct {
 
-    char* name;                 // Human readable name
-    sensor_type type;
-    sensor_val_type val_type;
+    const char* name;                 // Human readable name
+    sensor_type_t type;
+    sensor_val_type_t val_type;
     uint8_t update_rate;
     unsigned char val[4];       // float* f = (float*) &val;
+    uint8_t pin;
 
 } sensor_t;
 
@@ -26,6 +34,3 @@ typedef struct {
     uint32_t keepalive_period;
 
 } slave_t;
-
-enum sensor_type { analog, digital, i2c };
-enum sensor_val_type { v_int, v_uint, v_real, v_bool };

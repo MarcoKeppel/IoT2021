@@ -1,3 +1,21 @@
 {
-    "name": "device_name"
+    "name": "device_name_0",
+    "sensors": [
+        {
+            "name": "sensor_name_0-0",
+            "type": 1,
+            "val_type": 3,
+            "update_rate": 1,
+            "pin": 14,
+            "timeout_period": 10
+        },
+        {
+            "name": "sensor_name_0-1",
+            "type": 2,
+            "val_type": 0,
+            "update_rate": 10,
+            "pin": 2,
+            "timeout_period": 50
+        }
+    ]
 }
