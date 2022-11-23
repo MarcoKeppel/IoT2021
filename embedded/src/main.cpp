@@ -6,6 +6,8 @@
 
 #define STATIC_JSON_DOC_SIZE 512
 
+#define SENSORS_UPDATE_PERIOD 1000    // [ms]
+
 // Pin mapping 'pins_arduino.h'
 /*
   static const uint8_t D0   = 16;
@@ -28,7 +30,10 @@ void initSensors(StaticJsonDocument<STATIC_JSON_DOC_SIZE> configJson);
 void printSensors();
 
 sensor_t sensors[MAX_SLAVE_SENSORS_N];
+int16_t sensors_update_rate[MAX_SLAVE_SENSORS_N] = { 0 };
 int sensors_n = 0;
+
+uint32_t lastSensorsUpdateMillis = 0;
 
 const char* configFile = "config.json";     // Config JSON filename (stored in FS)
 
@@ -41,7 +46,26 @@ void setup() {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  
+  if (millis() > lastSensorsUpdateMillis + SENSORS_UPDATE_PERIOD) {
+
+    lastSensorsUpdateMillis = millis();
+
+    for (int i = 0; i < sensors_n; i++) {
+
+      sensors_update_rate[i]--;
+      if (sensors_update_rate[i] <= 0) {
+        
+        sensors_update_rate[i] = sensors[i].update_rate;
+        
+        // Read sensor value, method should depend on val_type
+        // For now assume it's always digitalRead()
+        sensors[i].val = digitalRead(sensors[i].pin);
+
+        Serial.printf("sensors[%d].val: %d\n", i, sensors[i].val);
+      }
+    }
+  }
 }
 
 void initNode() {

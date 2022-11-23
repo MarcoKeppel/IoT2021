@@ -21,7 +21,8 @@ typedef struct {
     sensor_type_t type;
     sensor_val_type_t val_type;
     uint8_t update_rate;
-    unsigned char val[4];       // float* f = (float*) &val;
+    //unsigned char val[4];       // float* f = (float*) &val;
+    int32_t val;        // Should be more generic than int, but for now this will work ok
     uint8_t pin;
 
 } sensor_t;
