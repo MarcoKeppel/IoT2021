@@ -4,7 +4,7 @@
     Master
 */
 
-#define MAX_SLAVES 8
+#define MAX_SLAVES_N 8
 #define MAX_SLAVE_SENSORS_N 8
 
 
@@ -35,3 +35,14 @@ typedef struct {
     uint32_t keepalive_period;
 
 } slave_t;
+
+typedef struct {
+    const char* name;
+    uint32_t masterAddr;
+    sensor_t* sensors;      // Static size array instead? With size defined by MAX_SLAVE_SENSORS_N macro
+} slave_data_t;
+
+typedef struct {
+    char* name;
+    slave_t* slaves;        // Static size array instead? With size defined by MAX_SLAVES_N macro
+} master_data_t;

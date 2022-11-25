@@ -5,7 +5,7 @@
             "name": "sensor_name_0-0",
             "type": 1,
             "val_type": 3,
-            "update_rate": 1,
+            "update_rate": 2,
             "pin": 14,
             "timeout_period": 10
         },

@@ -1,6 +1,11 @@
 #include <Arduino.h>
 #include <LittleFS.h>
+#include <painlessMesh.h>
 #include <ArduinoJson.h>
+
+#define   MESH_SSID       "UNITN_IOT" 
+#define   MESH_PASSWORD   "isthissecureenough?" 
+#define   MESH_PORT       2468
 
 #include "datastructs.h"
 
@@ -25,9 +30,14 @@
 
 // Prototypes
 void initNode();
+void initMesh();
 void initSensors(StaticJsonDocument<STATIC_JSON_DOC_SIZE> configJson);
 
 void printSensors();
+
+painlessMesh mesh;
+
+slave_data_t slaveData;
 
 sensor_t sensors[MAX_SLAVE_SENSORS_N];
 int16_t sensors_update_rate[MAX_SLAVE_SENSORS_N] = { 0 };
@@ -43,6 +53,7 @@ void setup() {
   Serial.println();       // Clear serial garbage
 
   initNode();
+  initMesh();
 }
 
 void loop() {
@@ -51,9 +62,17 @@ void loop() {
 
     lastSensorsUpdateMillis = millis();
 
+    // Create JSON doc...
+    StaticJsonDocument<512> msg;      // TODO: define size as macro
+    msg["id"] = mesh.getNodeId();
+    JsonArray sensorsArray = msg.createNestedArray("sensors");
+
+    // ...then cycle through all sensors and add those that need to be updated
     for (int i = 0; i < sensors_n; i++) {
 
+      // 1 period has passed!
       sensors_update_rate[i]--;
+
       if (sensors_update_rate[i] <= 0) {
         
         sensors_update_rate[i] = sensors[i].update_rate;
@@ -62,10 +81,27 @@ void loop() {
         // For now assume it's always digitalRead()
         sensors[i].val = digitalRead(sensors[i].pin);
 
-        Serial.printf("sensors[%d].val: %d\n", i, sensors[i].val);
+        //Serial.printf("sensors[%d].val: %d\n", i, sensors[i].val);
+
+        // Add data to message
+        JsonObject sensorObject = sensorsArray.createNestedObject();
+        sensorObject["index"] = i;
+        sensorObject["val"] = sensors[i].val;
       }
     }
+
+    // If some sensors have been updated, send message
+    if (!sensorsArray.size() <= 0) {
+
+      char msgSerialized[256];          // TODO: define size as macro
+      //String msgSerialized;
+      serializeJson(msg, msgSerialized);
+      mesh.sendBroadcast(msgSerialized, /*includeSelf =*/ true);
+    }
   }
+
+  // Run mesh update
+  mesh.update();
 }
 
 void initNode() {
@@ -89,6 +125,7 @@ void initNode() {
   deserializeJson(configJson, f.readString());
 
   Serial.println((const char*) configJson["name"]);
+  slaveData.name = (const char*) configJson["name"];
 
   initSensors(configJson);
 
@@ -114,6 +151,8 @@ void initSensors(StaticJsonDocument<STATIC_JSON_DOC_SIZE> configJson) {
     sensors[sensors_n].pin         =           (uint8_t) s["pin"];
     sensors_n++;
   }
+
+  slaveData.sensors = sensors;
 }
 
 void printSensors() {
@@ -129,4 +168,14 @@ void printSensors() {
       sensors[i].pin
     );
   }
+}
+
+void initMesh() {
+
+  mesh.init(MESH_SSID, MESH_PASSWORD, MESH_PORT);
+  mesh.onReceive([](uint32_t from, String &msg) {
+
+    Serial.printf("Received from %u msg:\n%s\n", from, msg.c_str());
+    Serial.println();
+  });
 }
