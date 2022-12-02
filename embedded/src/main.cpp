@@ -8,6 +8,7 @@
 #define   MESH_PORT       2468
 
 #include "datastructs.h"
+#include "config.h"
 
 #define STATIC_JSON_DOC_SIZE 512
 
@@ -33,7 +34,12 @@ void initNode();
 void initMesh();
 void initSensors(StaticJsonDocument<STATIC_JSON_DOC_SIZE> configJson);
 
+void masterLoop();
+void slaveLoop();
+
 void printSensors();
+
+uint32_t currentMillis = 0;
 
 painlessMesh mesh;
 
@@ -47,58 +53,35 @@ uint32_t lastSensorsUpdateMillis = 0;
 
 const char* configFile = "config.json";     // Config JSON filename (stored in FS)
 
+uint8_t state = 0;      // TODO: handle states with better state machine implementation (e.g. states enum)
+#define BROADCAST_PERIOD 2000
+uint32_t lastBroadcastMillis = 0;
+void sendMasterAddrReq();
+void sendSensorValUpdate();
+void sendSensorListAdv();
+
 void setup() {
   
   Serial.begin(115200);
   Serial.println();       // Clear serial garbage
+
+// DEBUG
+#ifdef __FORCE_MASTER__
+  state = UINT8_MAX;
+#endif
 
   initNode();
   initMesh();
 }
 
 void loop() {
+
+  currentMillis = millis();
+
   
-  if (millis() > lastSensorsUpdateMillis + SENSORS_UPDATE_PERIOD) {
-
-    lastSensorsUpdateMillis = millis();
-
-    // Create JSON doc...
-    StaticJsonDocument<512> msg;      // TODO: define size as macro
-    msg["id"] = mesh.getNodeId();
-    JsonArray sensorsArray = msg.createNestedArray("sensors");
-
-    // ...then cycle through all sensors and add those that need to be updated
-    for (int i = 0; i < sensors_n; i++) {
-
-      // 1 period has passed!
-      sensors_update_rate[i]--;
-
-      if (sensors_update_rate[i] <= 0) {
-        
-        sensors_update_rate[i] = sensors[i].update_rate;
-        
-        // Read sensor value, method should depend on val_type
-        // For now assume it's always digitalRead()
-        sensors[i].val = digitalRead(sensors[i].pin);
-
-        //Serial.printf("sensors[%d].val: %d\n", i, sensors[i].val);
-
-        // Add data to message
-        JsonObject sensorObject = sensorsArray.createNestedObject();
-        sensorObject["index"] = i;
-        sensorObject["val"] = sensors[i].val;
-      }
-    }
-
-    // If some sensors have been updated, send message
-    if (!sensorsArray.size() <= 0) {
-
-      char msgSerialized[256];          // TODO: define size as macro
-      //String msgSerialized;
-      serializeJson(msg, msgSerialized);
-      mesh.sendBroadcast(msgSerialized, /*includeSelf =*/ true);
-    }
-  }
+  // masterLoop();
+  slaveLoop();
+  
 
   // Run mesh update
   mesh.update();
@@ -173,9 +156,135 @@ void printSensors() {
 void initMesh() {
 
   mesh.init(MESH_SSID, MESH_PASSWORD, MESH_PORT);
-  mesh.onReceive([](uint32_t from, String &msg) {
+  mesh.onReceive(&onReceive);
+}
 
-    Serial.printf("Received from %u msg:\n%s\n", from, msg.c_str());
-    Serial.println();
-  });
+void sendMasterAddrReq() {
+
+  StaticJsonDocument<512> msg;      // TODO: define size as macro
+
+  msg["id"] = mesh.getNodeId();
+  msg["type"] = 0;                  // TODO: define types more formally
+
+  char msgSerialized[256];          // TODO: define size as macro
+  serializeJson(msg, msgSerialized);
+  mesh.sendBroadcast(msgSerialized, true);
+}
+
+void sendSensorValUpdate() {
+
+  lastSensorsUpdateMillis = currentMillis;
+
+  // Create JSON doc...
+  StaticJsonDocument<512> msg;      // TODO: define size as macro
+  msg["id"] = mesh.getNodeId();
+  msg["type"] = 9;                  // TODO: define types more formally
+  JsonArray sensorsArray = msg.createNestedArray("sensors");
+
+  // ...then cycle through all sensors and add those that need to be updated
+  for (int i = 0; i < sensors_n; i++) {
+
+    // 1 period has passed!
+    sensors_update_rate[i]--;
+
+    if (sensors_update_rate[i] <= 0) {
+      
+      sensors_update_rate[i] = sensors[i].update_rate;
+      
+      // Read sensor value, method should depend on val_type
+      // For now assume it's always digitalRead()
+      sensors[i].val = digitalRead(sensors[i].pin);
+
+      //Serial.printf("sensors[%d].val: %d\n", i, sensors[i].val);
+
+      // Add data to message
+      JsonObject sensorObject = sensorsArray.createNestedObject();
+      sensorObject["index"] = i;
+      sensorObject["val"] = sensors[i].val;
+    }
+  }
+
+  // If some sensors have been updated, send message
+  if (!sensorsArray.size() <= 0) {
+
+    char msgSerialized[256];          // TODO: define size as macro
+    //String msgSerialized;
+    serializeJson(msg, msgSerialized);
+    mesh.sendSingle(slaveData.masterAddr, msgSerialized);
+  }
+}
+
+void sendSensorListAdv() {
+
+
+}
+
+
+
+
+
+
+
+
+void masterLoop() {
+
+
+}
+
+void slaveLoop() {
+
+  switch (state) {
+
+    case 0:
+      if (currentMillis >= lastBroadcastMillis + BROADCAST_PERIOD) {
+        lastBroadcastMillis = currentMillis;
+        sendMasterAddrReq();
+      }
+      break;
+
+    case 1:
+      sendSensorListAdv();
+      break;
+
+    case 2:
+      if (currentMillis > lastSensorsUpdateMillis + SENSORS_UPDATE_PERIOD) {
+        sendSensorValUpdate();
+      }
+      break;
+  }
+}
+
+
+
+void onReceive(uint32_t from, const String &msg) {
+
+  Serial.printf("Received from %u msg:\n%s\n", from, msg.c_str());
+  Serial.println();
+
+  StaticJsonDocument<512> msgJson;
+  deserializeJson(msgJson, msg);
+
+  //onReceiveMaster(from, msgJson);
+  onReceiveSlave(from, msgJson);
+}
+
+void onReceiveMaster(uint32_t from, const JsonDocument &msg) {
+
+  switch((uint8_t) msg["type"]) {
+
+    case 0:
+      mesh.sendSingle(from, "{\"type\": 1}");
+      break;
+  }
+}
+
+void onReceiveSlave(uint32_t from, const JsonDocument &msg) {
+
+  switch((uint8_t) msg["type"]) {
+
+    case 1:
+      slaveData.masterAddr = from;
+      state = 1;
+      break;
+  }
 }
