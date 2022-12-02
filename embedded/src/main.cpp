@@ -210,7 +210,7 @@ void sendSensorValUpdate() {
   }
 
   // If some sensors have been updated, send message
-  if (!sensorsArray.size() <= 0) {
+  if (!(sensorsArray.size() <= 0)) {
 
     char msgSerialized[256];          // TODO: define size as macro
     //String msgSerialized;
