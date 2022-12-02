@@ -56,9 +56,14 @@ const char* configFile = "config.json";     // Config JSON filename (stored in F
 uint8_t state = 0;      // TODO: handle states with better state machine implementation (e.g. states enum)
 #define BROADCAST_PERIOD 2000
 uint32_t lastBroadcastMillis = 0;
+
 void sendMasterAddrReq();
 void sendSensorValUpdate();
 void sendSensorListAdv();
+
+void onReceive(uint32_t from, const String &msg);
+void onReceiveMaster(uint32_t from, const JsonDocument &msg);
+void onReceiveSlave(uint32_t from, const JsonDocument &msg);
 
 void setup() {
   
