@@ -18,6 +18,7 @@ typedef struct slave_data
     const char *name;
     uint32_t masterAddr;
     sensor_t sensors[MAX_SLAVE_SENSORS_N]; // Static size array instead? With size defined by MAX_SLAVE_SENSORS_N macro
+    int16_t sensors_update_rate[MAX_SLAVE_SENSORS_N] = {0};
     int sensors_n = 0;
 
     uint8_t state;
@@ -47,13 +48,13 @@ typedef struct slave_data
             break;
 
         case SS_SENS_ADV:
-            // sendSensorListAdv();
+            sendSensorListAdv();
             break;
 
         case SS_SENS_UPD:
             if (currentMillis > lastSensorsUpdateMillis + SENSORS_UPDATE_PERIOD)
             {
-                // sendSensorValUpdate();
+                sendSensorValUpdate();
             }
             break;
         }
@@ -72,56 +73,56 @@ typedef struct slave_data
         mesh->sendBroadcast(msgSerialized, true);
     }
 
-    // void sendSensorListAdv()
-    // {
-    // }
+    void sendSensorListAdv()
+    {
+    }
 
-    // void sendSensorValUpdate()
-    // {
+    void sendSensorValUpdate()
+    {
 
-    //     lastSensorsUpdateMillis = currentMillis;
+        lastSensorsUpdateMillis = currentMillis;
 
-    //     // Create JSON doc...
-    //     StaticJsonDocument<512> msg; // TODO: define size as macro
-    //     msg["id"] = mesh.getNodeId();
-    //     msg["type"] = 9; // TODO: define types more formally
-    //     JsonArray sensorsArray = msg.createNestedArray("sensors");
+        // Create JSON doc...
+        StaticJsonDocument<512> msg; // TODO: define size as macro
+        msg["id"] = mesh->getNodeId();
+        msg["type"] = 9; // TODO: define types more formally
+        JsonArray sensorsArray = msg.createNestedArray("sensors");
 
-    //     // ...then cycle through all sensors and add those that need to be updated
-    //     for (int i = 0; i < sensors_n; i++)
-    //     {
+        // ...then cycle through all sensors and add those that need to be updated
+        for (int i = 0; i < sensors_n; i++)
+        {
 
-    //         // 1 period has passed!
-    //         sensors_update_rate[i]--;
+            // 1 period has passed!
+            sensors_update_rate[i]--;
 
-    //         if (sensors_update_rate[i] <= 0)
-    //         {
+            if (sensors_update_rate[i] <= 0)
+            {
 
-    //             sensors_update_rate[i] = sensors[i].update_rate;
+                sensors_update_rate[i] = sensors[i].update_rate;
 
-    //             // Read sensor value, method should depend on val_type
-    //             // For now assume it's always digitalRead()
-    //             sensors[i].val = digitalRead(sensors[i].pin);
+                // Read sensor value, method should depend on val_type
+                // For now assume it's always digitalRead()
+                sensors[i].val = digitalRead(sensors[i].pin);
 
-    //             // Serial.printf("sensors[%d].val: %d\n", i, sensors[i].val);
+                // Serial.printf("sensors[%d].val: %d\n", i, sensors[i].val);
 
-    //             // Add data to message
-    //             JsonObject sensorObject = sensorsArray.createNestedObject();
-    //             sensorObject["index"] = i;
-    //             sensorObject["val"] = sensors[i].val;
-    //         }
-    //     }
+                // Add data to message
+                JsonObject sensorObject = sensorsArray.createNestedObject();
+                sensorObject["index"] = i;
+                sensorObject["val"] = sensors[i].val;
+            }
+        }
 
-    //     // If some sensors have been updated, send message
-    //     if (!(sensorsArray.size() <= 0))
-    //     {
+        // If some sensors have been updated, send message
+        if (!(sensorsArray.size() <= 0))
+        {
 
-    //         char msgSerialized[256]; // TODO: define size as macro
-    //         // String msgSerialized;
-    //         serializeJson(msg, msgSerialized);
-    //         mesh.sendSingle(slaveData.masterAddr, msgSerialized);
-    //     }
-    // }
+            char msgSerialized[256]; // TODO: define size as macro
+            // String msgSerialized;
+            serializeJson(msg, msgSerialized);
+            mesh->sendSingle(masterAddr, msgSerialized);
+        }
+    }
 
     void loadConfig()
     {

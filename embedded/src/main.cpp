@@ -39,7 +39,7 @@ painlessMesh mesh;
 // slave_data_t slaveData;
 
 sensor_t sensors[MAX_SLAVE_SENSORS_N];
-int16_t sensors_update_rate[MAX_SLAVE_SENSORS_N] = {0};
+
 int sensors_n = 0;
 
 uint8_t state = 0; // TODO: handle states with better state machine implementation (e.g. states enum)
