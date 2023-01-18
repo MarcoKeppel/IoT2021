@@ -7,8 +7,7 @@
 #define   MESH_PASSWORD   "isthissecureenough?" 
 #define   MESH_PORT       2468
 
-#include "datastructs.h"
-#include "config.h"
+#include "roles.h"
 
 #define STATIC_JSON_DOC_SIZE 512
 

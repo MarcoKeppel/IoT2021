@@ -1,4 +1,9 @@
+#ifndef __ROLES_H__
+#define __ROLES_H__
+
 #include "datastructs.h"
+#include "states.h"
+#include "config.h"
 
 typedef struct {
 
@@ -18,3 +23,5 @@ typedef struct {
     uint8_t state;
 
 } master_data_t;
+
+#endif

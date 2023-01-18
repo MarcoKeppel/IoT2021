@@ -1,3 +1,6 @@
+#ifndef __DATASTRUCTS_H__
+#define __DATASTRUCTS_H__
+
 #include <Arduino.h>
 
 /*
@@ -35,3 +38,5 @@ typedef struct {
     uint32_t keepalive_period;
 
 } slave_t;
+
+#endif
