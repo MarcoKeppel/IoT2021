@@ -1,7 +1,7 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
-#define __FORCE_MASTER__        // Force node to be initialized as master (for debugging purposes)
+//#define __FORCE_MASTER__        // Force node to be initialized as master (for debugging purposes)
 #define __S_SKIP_SENSOR_ADV__   // Slave skips sensor advertisement state (for debugging purposes)
 
 // TODO: move all configuration params/macros here

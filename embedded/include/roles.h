@@ -248,6 +248,53 @@ typedef struct master_data
     slave_t *slaves; // Static size array instead? With size defined by MAX_SLAVES_N macro
 
     uint8_t state;
+    uint32_t currentMillis = 0;
+    uint32_t lastSensorsUpdateMillis = 0;
+    uint32_t lastBroadcastMillis = 0;
+
+    painlessMesh *mesh;
+
+    master_data(painlessMesh *mesh) {
+
+        this->mesh = mesh;
+        
+        this->state = MS_INIT;
+    }
+
+    void masterSetup() {
+
+
+    }
+
+    void masterLoop() {
+
+
+    }
+
+    void onReceive(uint32_t from, const JsonDocument &msg) {
+
+        uint8_t type = (uint8_t)msg["type"];
+
+        switch (type) {
+
+            case 0:
+                sendMasterAddrResp(from);
+                break;
+        }
+    }
+
+    void sendMasterAddrResp(uint32_t dest) {
+
+        StaticJsonDocument<512> msg; // TODO: define size as macro
+
+        msg["id"] = mesh->getNodeId();
+        msg["type"] = 1; // TODO: define types more formally
+
+        char msgSerialized[256]; // TODO: define size as macro
+        serializeJson(msg, msgSerialized);
+        mesh->sendSingle(dest, msgSerialized);
+    }
+
 } master_data_t;
 
 #endif
