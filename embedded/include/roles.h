@@ -80,7 +80,7 @@ typedef struct slave_data
     {
 
         uint8_t type = (uint8_t)msg["type"];
-        printf("yp: %u, from %u", type, state);
+        Serial.printf("msgype: %u, curstate %u\n\r", type, state);
         switch (state)
         {
 
@@ -88,7 +88,7 @@ typedef struct slave_data
             if (type == 1)
             { // TODO: macro for msg types
                 this->masterAddr = from;
-                printf("m: %u, from %u", masterAddr, from);
+                Serial.printf("m: %u, from %u", masterAddr, from);
                 this->state = SS_SENS_ADV;
 #ifdef __S_SKIP_SENSOR_ADV__
                 this->state = SS_SENS_UPD;
@@ -107,6 +107,8 @@ typedef struct slave_data
             }
             break;
         }
+
+        Serial.printf("newstate: %u\n\r", state);
     }
 
     void sendMasterAddrReq()
@@ -285,38 +287,40 @@ typedef struct master_data
 
     painlessMesh *mesh;
 
-    master_data(painlessMesh *mesh) {
+    master_data(painlessMesh *mesh)
+    {
 
         this->mesh = mesh;
-        
+
         this->state = MS_INIT;
     }
 
-    void masterSetup() {
-
-
+    void masterSetup()
+    {
     }
 
-    void masterLoop() {
-
-
+    void masterLoop()
+    {
     }
 
-    void onReceive(uint32_t from, const JsonDocument &msg) {
+    void onReceive(uint32_t from, const JsonDocument &msg)
+    {
 
         uint8_t type = (uint8_t)msg["type"];
 
         Serial.printf("Message:\n\tfrom: %u\n\ttype: %u\n", from, type);
 
-        switch (type) {
+        switch (type)
+        {
 
-            case 0:
-                sendMasterAddrResp(from);
-                break;
+        case 0:
+            sendMasterAddrResp(from);
+            break;
         }
     }
 
-    void sendMasterAddrResp(uint32_t dest) {
+    void sendMasterAddrResp(uint32_t dest)
+    {
 
         StaticJsonDocument<512> msg; // TODO: define size as macro
 

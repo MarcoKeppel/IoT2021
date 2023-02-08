@@ -86,6 +86,6 @@ void onReceive(uint32_t from, const String &msg)
 #ifdef __FORCE_MASTER__
   masterD.onReceive(from, msgJson);
 #else
-  slaveD.onReceive(from, msgJson)
+  slaveD.onReceive(from, msgJson);
 #endif
 }
