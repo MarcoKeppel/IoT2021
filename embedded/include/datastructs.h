@@ -3,13 +3,6 @@
 
 #include <Arduino.h>
 
-/*
-    Master
-*/
-
-#define MAX_SLAVES_N 8
-#define MAX_SLAVE_SENSORS_N 8
-
 
 enum sensor_type { analog, digital, i2c };
 enum sensor_val_type { v_int, v_uint, v_real, v_bool };
@@ -34,7 +27,7 @@ typedef struct {
 
     uint32_t addr;
     char* name;
-    sensor_t sensors[MAX_SLAVE_SENSORS_N];
+    sensor_t sensors[M_MAX_SLAVE_SENSORS_N];
     uint32_t keepalive_period;
 
 } slave_t;

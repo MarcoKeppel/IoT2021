@@ -16,6 +16,9 @@
 
 #define BROADCAST_PERIOD 2000
 
+#define M_MAX_SLAVES_N 8
+#define M_MAX_SLAVE_SENSORS_N 8
+
 const char* configFile = "config.json";     // Config JSON filename (stored in FS)
 
 #endif

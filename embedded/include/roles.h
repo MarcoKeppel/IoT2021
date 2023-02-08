@@ -6,9 +6,10 @@
 #include <painlessMesh.h>
 #include <ArduinoJson.h>
 
+#include "config.h"
+
 #include "datastructs.h"
 #include "states.h"
-#include "config.h"
 #include <painlessMesh.h>
 #include <ArduinoJson.h>
 
@@ -17,8 +18,8 @@ typedef struct slave_data
 
     const char *name;
     uint32_t masterAddr;
-    sensor_t sensors[MAX_SLAVE_SENSORS_N]; // Static size array instead? With size defined by MAX_SLAVE_SENSORS_N macro
-    int16_t sensors_update_rate[MAX_SLAVE_SENSORS_N] = {0};
+    sensor_t sensors[M_MAX_SLAVE_SENSORS_N]; // Static size array instead? With size defined by MAX_SLAVE_SENSORS_N macro
+    int16_t sensors_update_rate[M_MAX_SLAVE_SENSORS_N] = {0};
     int sensors_n = 0;
 
     uint8_t state;
@@ -239,7 +240,7 @@ typedef struct slave_data
         for (JsonObject s : sensorsJson)
         {
 
-            if (sensors_n >= MAX_SLAVE_SENSORS_N)
+            if (sensors_n >= M_MAX_SLAVE_SENSORS_N)
                 break;
 
             // TODO: this should really be its own function
@@ -275,9 +276,58 @@ typedef struct master_data
 {
 
     char *name;
-    slave_t *slaves; // Static size array instead? With size defined by MAX_SLAVES_N macro
+    slave_t slaves[M_MAX_SLAVES_N];
 
     uint8_t state;
+    uint32_t currentMillis = 0;
+    uint32_t lastSensorsUpdateMillis = 0;
+    uint32_t lastBroadcastMillis = 0;
+
+    painlessMesh *mesh;
+
+    master_data(painlessMesh *mesh) {
+
+        this->mesh = mesh;
+        
+        this->state = MS_INIT;
+    }
+
+    void masterSetup() {
+
+
+    }
+
+    void masterLoop() {
+
+
+    }
+
+    void onReceive(uint32_t from, const JsonDocument &msg) {
+
+        uint8_t type = (uint8_t)msg["type"];
+
+        Serial.printf("Message:\n\tfrom: %u\n\ttype: %u\n", from, type);
+
+        switch (type) {
+
+            case 0:
+                sendMasterAddrResp(from);
+                break;
+        }
+    }
+
+    void sendMasterAddrResp(uint32_t dest) {
+
+        StaticJsonDocument<512> msg; // TODO: define size as macro
+
+        msg["id"] = mesh->getNodeId();
+        msg["type"] = 1; // TODO: define types more formally
+
+        char msgSerialized[256]; // TODO: define size as macro
+        serializeJson(msg, msgSerialized);
+        mesh->sendSingle(dest, msgSerialized);
+    }
+
 } master_data_t;
 
 #endif
