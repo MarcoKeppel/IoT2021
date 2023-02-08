@@ -39,7 +39,7 @@ void setup()
 {
 
   Serial.begin(115200);
-  Serial.println(); // Clear serial garbage
+  Serial.println("\n----------------"); // Clear serial garbage
 
   initMesh();
 
@@ -81,6 +81,9 @@ void onReceive(uint32_t from, const String &msg)
   StaticJsonDocument<512> msgJson;
   deserializeJson(msgJson, msg);
 
-  // TODO: *master_data_t instance*.onReceive(from, msgJson);
-  // TODO: *slave_data_t instance*.onReceive(from, msgJson);
+#ifdef __FORCE_MASTER__
+  masterD.onReceive(from, msgJson);
+#else
+  slaveD.onReceive(from, msgJson)
+#endif
 }
