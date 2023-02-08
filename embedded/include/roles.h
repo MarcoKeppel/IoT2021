@@ -31,6 +31,18 @@ typedef struct slave_data
     slave_data(painlessMesh *mesh)
     {
         this->mesh = mesh;
+
+        // Set initial slave state
+        this->state = SS_INIT;
+    }
+
+    void slaveSetup() {
+
+        // Load config from FS, and init sensors
+        this->loadConfig();
+
+        // Set slave state
+        this->state = SS_MASTER_REQ;
     }
 
     void slaveLoop()
