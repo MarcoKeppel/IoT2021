@@ -44,11 +44,15 @@ uint8_t state = 0; // TODO: handle states with better state machine implementati
 
 void onReceive(uint32_t from, const String &msg);
 
+slave_data_t slaveD(&mesh);
+
 void setup()
 {
 
   Serial.begin(115200);
   Serial.println(); // Clear serial garbage
+
+  slaveD.slaveSetup();
 
 // DEBUG
 #ifdef __FORCE_MASTER__
