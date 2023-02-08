@@ -26,6 +26,7 @@ typedef struct slave_data
     uint32_t currentMillis = 0;
     uint32_t lastSensorsUpdateMillis = 0;
     uint32_t lastBroadcastMillis = 0;
+    uint32_t lastAdvMillis = 0;
 
     painlessMesh *mesh;
 
@@ -64,7 +65,12 @@ typedef struct slave_data
             break;
 
         case SS_SENS_ADV:
-            sendSensorListAdv();
+            if (currentMillis >= lastAdvMillis + ADV_PERIOD)
+            {
+                lastAdvMillis = currentMillis;
+                sendSensorListAdv();
+            }
+
             break;
 
         case SS_SENS_UPD:
@@ -88,7 +94,7 @@ typedef struct slave_data
             if (type == 1)
             { // TODO: macro for msg types
                 this->masterAddr = from;
-                Serial.printf("m: %u, from %u", masterAddr, from);
+                Serial.printf("m: %u, from %u\n\r", masterAddr, from);
                 this->state = SS_SENS_ADV;
 #ifdef __S_SKIP_SENSOR_ADV__
                 this->state = SS_SENS_UPD;
@@ -126,7 +132,7 @@ typedef struct slave_data
 
     void sendSensorListAdv()
     {
-        // Serial.println("send sens");
+        Serial.println("sending sens...");
         char msgSerialized[256];     // TODO: define size as macro
         StaticJsonDocument<512> msg; // TODO: define size as macro
         // Serial.printf("sens num: %d", sensors_n);
@@ -152,7 +158,9 @@ typedef struct slave_data
         // Serial.printf("------------------- mad: %d\n\r", masterAddr);
         // // Serial.println(msg["type"]);
         serializeJson(msg, msgSerialized);
+        Serial.println("serializd message...");
         mesh->sendSingle(masterAddr, msgSerialized);
+        Serial.println("message sent! :)");
     }
 
     void sendSensorValUpdate()
@@ -284,7 +292,6 @@ typedef struct master_data
     uint32_t currentMillis = 0;
     uint32_t lastSensorsUpdateMillis = 0;
     uint32_t lastBroadcastMillis = 0;
-
     painlessMesh *mesh;
 
     master_data(painlessMesh *mesh)
