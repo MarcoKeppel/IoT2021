@@ -36,8 +36,10 @@ typedef struct slave_data
         this->state = SS_INIT;
     }
 
-    void slaveSetup() {
+    void slaveSetup()
+    {
 
+        Serial.println("configging");
         // Load config from FS, and init sensors
         this->loadConfig();
 

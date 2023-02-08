@@ -52,11 +52,15 @@ void onReceive(uint32_t from, const String &msg);
 void onReceiveMaster(uint32_t from, const JsonDocument &msg);
 void onReceiveSlave(uint32_t from, const JsonDocument &msg);
 
+slave_data_t slaveD(&mesh);
+
 void setup()
 {
 
   Serial.begin(115200);
   Serial.println(); // Clear serial garbage
+
+  slaveD.slaveSetup();
 
 // DEBUG
 #ifdef __FORCE_MASTER__
