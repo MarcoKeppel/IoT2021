@@ -31,12 +31,8 @@ void slaveLoop();
 void printSensors();
 
 uint32_t currentMillis = 0;
-uint32_t lastSensorsUpdateMillis = 0;
-uint32_t lastBroadcastMillis = 0;
 
 painlessMesh mesh;
-
-// slave_data_t slaveData;
 
 sensor_t sensors[MAX_SLAVE_SENSORS_N];
 
@@ -44,13 +40,9 @@ int sensors_n = 0;
 
 uint8_t state = 0; // TODO: handle states with better state machine implementation (e.g. states enum)
 
-void sendMasterAddrReq();
-void sendSensorValUpdate();
-void sendSensorListAdv();
+
 
 void onReceive(uint32_t from, const String &msg);
-void onReceiveMaster(uint32_t from, const JsonDocument &msg);
-void onReceiveSlave(uint32_t from, const JsonDocument &msg);
 
 void setup()
 {
@@ -71,8 +63,8 @@ void loop()
 
   currentMillis = millis();
 
-  // masterLoop();
-  // slaveLoop();
+  // TODO: *master_data_t instance*.masterLoop();
+  // TODO: *slave_data_t instance*.slaveLoop();
 
   // Run mesh update
   mesh.update();
@@ -85,10 +77,6 @@ void initMesh()
   mesh.onReceive(&onReceive);
 }
 
-void masterLoop()
-{
-}
-
 void onReceive(uint32_t from, const String &msg)
 {
 
@@ -98,31 +86,6 @@ void onReceive(uint32_t from, const String &msg)
   StaticJsonDocument<512> msgJson;
   deserializeJson(msgJson, msg);
 
-  // onReceiveMaster(from, msgJson);
-  onReceiveSlave(from, msgJson);
-}
-
-void onReceiveMaster(uint32_t from, const JsonDocument &msg)
-{
-
-  switch ((uint8_t)msg["type"])
-  {
-
-  case 0:
-    mesh.sendSingle(from, "{\"type\": 1}");
-    break;
-  }
-}
-
-void onReceiveSlave(uint32_t from, const JsonDocument &msg)
-{
-
-  switch ((uint8_t)msg["type"])
-  {
-
-  case 1:
-    // slaveData.masterAddr = from;
-    state = 1;
-    break;
-  }
+  // TODO: *master_data_t instance*.onReceive(from, msgJson);
+  // TODO: *slave_data_t instance*.onReceive(from, msgJson);
 }

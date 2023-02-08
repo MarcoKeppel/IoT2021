@@ -72,6 +72,37 @@ typedef struct slave_data
         }
     }
 
+    void onReceive(uint32_t from, const JsonDocument &msg)
+    {
+
+        uint8_t type = (uint8_t)msg["type"];
+
+        switch (state)
+        {
+
+        case SS_MASTER_REQ:
+            if (type == 1) {    // TODO: macro for msg types
+                this->masterAddr = from;
+                this->state = SS_SENS_ADV;
+#ifdef __S_SKIP_SENSOR_ADV__
+                this->state = SS_SENS_UPD;
+#endif
+            }
+            break;
+
+        case SS_SENS_ADV:
+            sendSensorListAdv();
+            break;
+
+        case SS_SENS_UPD:
+            if (currentMillis > lastSensorsUpdateMillis + SENSORS_UPDATE_PERIOD)
+            {
+                sendSensorValUpdate();
+            }
+            break;
+        }
+    }
+
     void sendMasterAddrReq()
     {
 
