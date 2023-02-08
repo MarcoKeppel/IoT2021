@@ -49,7 +49,8 @@ typedef struct slave_data
 
     void slaveLoop()
     {
-
+        currentMillis = millis();
+        // sendSensorListAdv();
         switch (state)
         {
 
@@ -78,13 +79,15 @@ typedef struct slave_data
     {
 
         uint8_t type = (uint8_t)msg["type"];
-
+        printf("yp: %u, from %u", type, state);
         switch (state)
         {
 
         case SS_MASTER_REQ:
-            if (type == 1) {    // TODO: macro for msg types
+            if (type == 1)
+            { // TODO: macro for msg types
                 this->masterAddr = from;
+                printf("m: %u, from %u", masterAddr, from);
                 this->state = SS_SENS_ADV;
 #ifdef __S_SKIP_SENSOR_ADV__
                 this->state = SS_SENS_UPD;
@@ -120,6 +123,33 @@ typedef struct slave_data
 
     void sendSensorListAdv()
     {
+        // Serial.println("send sens");
+        char msgSerialized[256];     // TODO: define size as macro
+        StaticJsonDocument<512> msg; // TODO: define size as macro
+        // Serial.printf("sens num: %d", sensors_n);
+        msg["type"] = 2;
+        // msg["sensors"] =
+        // for (int i = 0; i < sensors_n; i++)
+        // {
+        //     // Serial.printf(
+        //     //     "{\n\tname: %s\n\ttype: %u\n\tval_type: %u\n\tupdate_rate: %u\n\tpin: %u\n},\n",
+        //     //     sensors[i].name,
+        //     //     sensors[i].type,
+        //     //     sensors[i].val_type,
+        //     //     sensors[i].update_rate,
+        //     //     sensors[i].pin);
+        //     // msg["name"] = sensors[i].name;
+        //     // TODO chage msg type
+        //     // msg["update_rate"] = sensors[i].update_rate;
+        // }
+
+        // Serial.println((const char *)msg["name"]);
+        // Serial.println((const char *)msg["type"]);
+        // Serial.println((const char *)msg["update_rate"]);
+        // Serial.printf("------------------- mad: %d\n\r", masterAddr);
+        // // Serial.println(msg["type"]);
+        serializeJson(msg, msgSerialized);
+        mesh->sendSingle(masterAddr, msgSerialized);
     }
 
     void sendSensorValUpdate()

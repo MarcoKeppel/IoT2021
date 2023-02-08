@@ -40,8 +40,6 @@ int sensors_n = 0;
 
 uint8_t state = 0; // TODO: handle states with better state machine implementation (e.g. states enum)
 
-
-
 void onReceive(uint32_t from, const String &msg);
 
 slave_data_t slaveD(&mesh);
@@ -69,6 +67,8 @@ void loop()
 
   // TODO: *master_data_t instance*.masterLoop();
   // TODO: *slave_data_t instance*.slaveLoop();
+
+  slaveD.slaveLoop();
 
   // Run mesh update
   mesh.update();
