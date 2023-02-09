@@ -1,5 +1,6 @@
 {
     "name": "device_name_0",
+    "role": 0,
     "sensors": [
         {
             "name": "sensor_name_0-0",

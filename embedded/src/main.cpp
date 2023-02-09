@@ -35,6 +35,8 @@ slave_data_t slaveD(&mesh);
 
 master_data_t masterD(&mesh);
 
+node_role_t role;
+
 void setup()
 {
 
@@ -43,10 +45,28 @@ void setup()
 
   initMesh();
 
+  role = getNodeRole();
+
 #ifdef __FORCE_MASTER__
+  role = master;
   masterD.masterSetup();
 #else
-  slaveD.slaveSetup();
+  
+  switch (role) {
+
+    case master:
+      masterD.masterSetup();
+      break;
+    
+    case slave:
+      slaveD.slaveSetup();
+      break;
+
+    case master_slave:
+      masterD.masterSetup();
+      slaveD.slaveSetup();
+  }
+
 #endif
 }
 
@@ -58,10 +78,23 @@ void loop()
 #ifdef __FORCE_MASTER__
   masterD.masterLoop();
 #else
-  slaveD.slaveLoop();
-#endif
+  
+  switch (role) {         // TODO: make so this code can be reused (maybe function with functions to execute for each case as params?)
 
-  slaveD.slaveLoop();
+    case master:
+      masterD.masterLoop();
+      break;
+    
+    case slave:
+      slaveD.slaveLoop();
+      break;
+
+    case master_slave:
+      masterD.masterLoop();
+      slaveD.slaveLoop();
+  }
+
+#endif
 
   // Run mesh update
   mesh.update();
@@ -86,6 +119,21 @@ void onReceive(uint32_t from, const String &msg)
 #ifdef __FORCE_MASTER__
   masterD.onReceive(from, msgJson);
 #else
-  slaveD.onReceive(from, msgJson);
+  
+  switch (role) {
+
+    case master:
+      masterD.onReceive(from, msgJson);
+      break;
+    
+    case slave:
+      slaveD.onReceive(from, msgJson);
+      break;
+
+    case master_slave:
+      masterD.onReceive(from, msgJson);
+      slaveD.onReceive(from, msgJson);
+  }
+
 #endif
 }

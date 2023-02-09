@@ -7,8 +7,12 @@
 enum sensor_type { analog, digital, i2c };
 enum sensor_val_type { v_int, v_uint, v_real, v_bool };
 
+enum node_role { master, slave, master_slave };
+
 typedef sensor_type sensor_type_t;
 typedef sensor_val_type sensor_val_type_t;
+
+typedef node_role node_role_t;
 
 
 typedef struct {

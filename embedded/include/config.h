@@ -20,6 +20,9 @@
 #define M_MAX_SLAVES_N 8
 #define M_MAX_SLAVE_SENSORS_N 8
 
+// Default node role used when "role" is not specified in the node config file
+#define NODE_DEFAULT_ROLE slave
+
 const char *configFile = "config.json"; // Config JSON filename (stored in FS)
 
 #endif
