@@ -324,9 +324,13 @@ typedef struct master_data
         switch (type)
         {
 
-        case 0:
-            sendMasterAddrResp(from);
-            break;
+            case 0:
+                sendMasterAddrResp(from);
+                break;
+            
+            case 2:
+                sendSensorListAck(from);
+                break;
         }
     }
 
@@ -337,6 +341,18 @@ typedef struct master_data
 
         msg["id"] = mesh->getNodeId();
         msg["type"] = 1; // TODO: define types more formally
+
+        char msgSerialized[256]; // TODO: define size as macro
+        serializeJson(msg, msgSerialized);
+        mesh->sendSingle(dest, msgSerialized);
+    }
+
+    void sendSensorListAck(uint32_t dest) {
+
+        StaticJsonDocument<512> msg; // TODO: define size as macro
+
+        msg["id"] = mesh->getNodeId();
+        msg["type"] = 3; // TODO: define types more formally
 
         char msgSerialized[256]; // TODO: define size as macro
         serializeJson(msg, msgSerialized);
