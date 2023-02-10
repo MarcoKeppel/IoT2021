@@ -94,7 +94,7 @@ typedef struct slave_data
             if (type == 1)
             { // TODO: macro for msg types
                 this->masterAddr = from;
-                Serial.printf("m: %u, from %u\n\r", masterAddr, from);
+                Serial.printf("found master on: %u\n\r", from);
                 this->state = SS_SENS_ADV;
 #ifdef __S_SKIP_SENSOR_ADV__
                 this->state = SS_SENS_UPD;
@@ -103,7 +103,11 @@ typedef struct slave_data
             break;
 
         case SS_SENS_ADV:
-            sendSensorListAdv();
+            if (type == 3)
+            { // TODO: macro for msg types
+                Serial.printf("master %u has recieved sensor adv\n\r", from);
+                this->state = SS_SENS_UPD;
+            }
             break;
 
         case SS_SENS_UPD:
@@ -213,7 +217,7 @@ typedef struct slave_data
     void loadConfig()
     {
 
-//  ----------------------------------------------------------------
+        //  ----------------------------------------------------------------
         if (!LittleFS.begin())
         {
             Serial.println("error: could not init LittleFS");
@@ -232,8 +236,8 @@ typedef struct slave_data
             Serial.printf("error: could not open config file (%s)\n", configFile);
         }
 
-//  TODO: make this code reusable (function) (not only to slave, but also master)
-//  ---------------------------------------------------------------
+        //  TODO: make this code reusable (function) (not only to slave, but also master)
+        //  ---------------------------------------------------------------
 
         StaticJsonDocument<STATIC_JSON_DOC_SIZE> configJson;
         deserializeJson(configJson, f.readString());
@@ -324,13 +328,13 @@ typedef struct master_data
         switch (type)
         {
 
-            case 0:
-                sendMasterAddrResp(from);
-                break;
-            
-            case 2:
-                sendSensorListAck(from);
-                break;
+        case 0:
+            sendMasterAddrResp(from);
+            break;
+
+        case 2:
+            sendSensorListAck(from);
+            break;
         }
     }
 
@@ -347,7 +351,8 @@ typedef struct master_data
         mesh->sendSingle(dest, msgSerialized);
     }
 
-    void sendSensorListAck(uint32_t dest) {
+    void sendSensorListAck(uint32_t dest)
+    {
 
         StaticJsonDocument<512> msg; // TODO: define size as macro
 
@@ -361,9 +366,10 @@ typedef struct master_data
 
 } master_data_t;
 
-node_role_t getNodeRole() {
+node_role_t getNodeRole()
+{
 
-//  ----------------------------------------------------------------
+    //  ----------------------------------------------------------------
     if (!LittleFS.begin())
     {
         Serial.println("error: could not init LittleFS");
@@ -385,8 +391,8 @@ node_role_t getNodeRole() {
         Serial.printf("warning: 'role' not specified in config file. Default value '%d' will be used.\n", NODE_DEFAULT_ROLE);
         return NODE_DEFAULT_ROLE;
     }
-//  TODO: make this code reusable (function)
-//  ---------------------------------------------------------------
+    //  TODO: make this code reusable (function)
+    //  ---------------------------------------------------------------
 
     StaticJsonDocument<STATIC_JSON_DOC_SIZE> configJson;
     deserializeJson(configJson, f.readString());
@@ -394,13 +400,15 @@ node_role_t getNodeRole() {
     JsonVariant jsonRole = configJson["role"];
     node_role_t role;
 
-    if (jsonRole.isNull()) {
+    if (jsonRole.isNull())
+    {
 
         Serial.printf("warning: 'role' not specified in config file. Default value '%d' will be used.\n", NODE_DEFAULT_ROLE);
         role = NODE_DEFAULT_ROLE;
     }
-    else {
-        role = (node_role_t) jsonRole;
+    else
+    {
+        role = (node_role_t)jsonRole;
     }
 
     Serial.printf("role: %d\n", role);
