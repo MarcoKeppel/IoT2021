@@ -3,7 +3,9 @@
 #include <painlessMesh.h>
 #include <ArduinoJson.h>
 
-#include "roles.h"
+#include "common.h"
+#include "slave.h"
+#include "master.h"
 
 // Pin mapping 'pins_arduino.h'
 /*
@@ -51,20 +53,21 @@ void setup()
   role = master;
   masterD.masterSetup();
 #else
-  
-  switch (role) {
 
-    case master:
-      masterD.masterSetup();
-      break;
-    
-    case slave:
-      slaveD.slaveSetup();
-      break;
+  switch (role)
+  {
 
-    case master_slave:
-      masterD.masterSetup();
-      slaveD.slaveSetup();
+  case master:
+    masterD.masterSetup();
+    break;
+
+  case slave:
+    slaveD.slaveSetup();
+    break;
+
+  case master_slave:
+    masterD.masterSetup();
+    slaveD.slaveSetup();
   }
 
 #endif
@@ -78,20 +81,21 @@ void loop()
 #ifdef __FORCE_MASTER__
   masterD.masterLoop();
 #else
-  
-  switch (role) {         // TODO: make so this code can be reused (maybe function with functions to execute for each case as params?)
 
-    case master:
-      masterD.masterLoop();
-      break;
-    
-    case slave:
-      slaveD.slaveLoop();
-      break;
+  switch (role)
+  { // TODO: make so this code can be reused (maybe function with functions to execute for each case as params?)
 
-    case master_slave:
-      masterD.masterLoop();
-      slaveD.slaveLoop();
+  case master:
+    masterD.masterLoop();
+    break;
+
+  case slave:
+    slaveD.slaveLoop();
+    break;
+
+  case master_slave:
+    masterD.masterLoop();
+    slaveD.slaveLoop();
   }
 
 #endif
@@ -119,20 +123,21 @@ void onReceive(uint32_t from, const String &msg)
 #ifdef __FORCE_MASTER__
   masterD.onReceive(from, msgJson);
 #else
-  
-  switch (role) {
 
-    case master:
-      masterD.onReceive(from, msgJson);
-      break;
-    
-    case slave:
-      slaveD.onReceive(from, msgJson);
-      break;
+  switch (role)
+  {
 
-    case master_slave:
-      masterD.onReceive(from, msgJson);
-      slaveD.onReceive(from, msgJson);
+  case master:
+    masterD.onReceive(from, msgJson);
+    break;
+
+  case slave:
+    slaveD.onReceive(from, msgJson);
+    break;
+
+  case master_slave:
+    masterD.onReceive(from, msgJson);
+    slaveD.onReceive(from, msgJson);
   }
 
 #endif
