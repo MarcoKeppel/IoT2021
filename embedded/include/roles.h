@@ -28,6 +28,8 @@ typedef struct slave_data
     uint32_t lastBroadcastMillis = 0;
     uint32_t lastAdvMillis = 0;
 
+    uint32_t minUpdateRate = 3;
+
     painlessMesh *mesh;
 
     slave_data(painlessMesh *mesh)
@@ -141,11 +143,9 @@ typedef struct slave_data
         StaticJsonDocument<512> msg; // TODO: define size as macro
         // Serial.printf("sens num: %d", sensors_n);
         msg["type"] = 2;
-        // "type" : 1,
-        //     "val_type" : 3,
-        //     "update_rate" : 2,
-        //     "pin" : 14,
-        //     "timeout_period" : 10
+
+        msg["min_update_rate"] = this->minUpdateRate;
+
         JsonArray sensorsArray = msg.createNestedArray("sensors");
 
         // ...then cycle through all sensors and add those that need to be updated
@@ -258,7 +258,7 @@ typedef struct slave_data
     {
 
         JsonArray sensorsJson = configJson["sensors"].as<JsonArray>();
-
+        uint32_t tmpMinUpdateRate = 2000;
         for (JsonObject s : sensorsJson)
         {
 
@@ -273,8 +273,17 @@ typedef struct slave_data
             sensors[sensors_n].val_type = (sensor_val_type_t)s["val_type"];
             sensors[sensors_n].update_rate = (uint8_t)s["update_rate"];
             sensors[sensors_n].pin = (uint8_t)s["pin"];
+
+            // stores fastest update rate
+            if (sensors[sensors_n].update_rate < tmpMinUpdateRate)
+            {
+                tmpMinUpdateRate = sensors[sensors_n].update_rate;
+            }
             sensors_n++;
         }
+        this->minUpdateRate = tmpMinUpdateRate;
+
+        Serial.printf("min updrt: %u", minUpdateRate);
     }
 
     void printSensors()
@@ -299,6 +308,7 @@ typedef struct master_data
 
     char *name;
     slave_t slaves[M_MAX_SLAVES_N];
+    uint32_t slaves_update_rate[M_MAX_SLAVES_N];
 
     uint8_t state;
     uint32_t currentMillis = 0;
@@ -320,6 +330,13 @@ typedef struct master_data
 
     void masterLoop()
     {
+        currentMillis = millis();
+        // sendSensorListAdv();
+
+        if (currentMillis >= lastBroadcastMillis + BROADCAST_PERIOD)
+        {
+            lastBroadcastMillis = currentMillis;
+        }
     }
 
     void onReceive(uint32_t from, const JsonDocument &msg)
@@ -338,6 +355,9 @@ typedef struct master_data
 
         case 2:
             sendSensorListAck(from);
+            break;
+        case 3:
+            // TODO: update local sensors data
             break;
         }
     }
@@ -367,7 +387,6 @@ typedef struct master_data
         serializeJson(msg, msgSerialized);
         mesh->sendSingle(dest, msgSerialized);
     }
-
 } master_data_t;
 
 node_role_t getNodeRole()
