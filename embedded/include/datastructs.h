@@ -2,6 +2,7 @@
 #define __DATASTRUCTS_H__
 
 #include <Arduino.h>
+#include "config.h"
 
 
 enum sensor_type { analog, digital, i2c };
@@ -32,6 +33,7 @@ typedef struct {
     uint32_t addr;
     char* name;
     sensor_t sensors[M_MAX_SLAVE_SENSORS_N];
+    uint8_t n_sensors = 0;
     uint32_t keepalive_period;
 
 } slave_t;

@@ -291,6 +291,7 @@ typedef struct master_data
 
     char *name;
     slave_t slaves[M_MAX_SLAVES_N];
+    uint8_t n_slaves;
 
     uint8_t state;
     uint32_t currentMillis = 0;
@@ -304,6 +305,7 @@ typedef struct master_data
         this->mesh = mesh;
 
         this->state = MS_INIT;
+        n_slaves = 0;
     }
 
     void masterSetup()
@@ -324,12 +326,17 @@ typedef struct master_data
         switch (type)
         {
 
-            case 0:
+            case 0:                 // TODO check if new slaves can be added, return error if not (protocol to be defined)
+                addSlave(from);
                 sendMasterAddrResp(from);
                 break;
             
             case 2:
+                addSlaveSensors(from, msg);     // TODO: return status (e.g. if slave does not exist, do not return ack and return error instead (protocol to be defined))
                 sendSensorListAck(from);
+                break;
+            case 9:
+                updateSensorValues(from, msg);
                 break;
         }
     }
@@ -357,6 +364,56 @@ typedef struct master_data
         char msgSerialized[256]; // TODO: define size as macro
         serializeJson(msg, msgSerialized);
         mesh->sendSingle(dest, msgSerialized);
+    }
+
+    void addSlave(uint32_t addr) {
+
+        if (n_slaves < M_MAX_SLAVES_N) {
+
+            slaves[n_slaves].addr = addr;
+            // TODO slave should send other parameters such as name, either here (master req) or in the sensor adv message
+            n_slaves++;
+
+            Serial.printf("New slave added to list: \n\taddr: %u\n#slaves: %d\n", addr, n_slaves);
+        }
+    }
+
+    void addSlaveSensors(uint32_t addr, const JsonDocument &msg) {
+
+        for (int i = 0; i < this->n_slaves; i++) {
+
+            if (slaves[i].addr == addr) {
+
+                JsonArray sensors = msg["sensors"].as<JsonArray>();
+
+                for (JsonObject s : sensors) {
+
+                    if (slaves[i].n_sensors > M_MAX_SLAVE_SENSORS_N) break;
+
+                    sensor_t* sensor = &(slaves[i].sensors[slaves[i].n_sensors]);
+                    
+                    // TODO: sensor->name
+                    sensor->type        = s["type"];
+                    sensor->val_type    = s["val_type"];
+                    sensor->update_rate = s["update_rate"];
+
+                    slaves[i].n_sensors++;
+                }
+
+                break;
+            }
+        }
+    }
+
+    void updateSensorValues(uint32_t addr, const JsonDocument &msg) {
+
+        for (int i = 0; i < this->n_slaves; i++) {
+
+            if (slaves[i].addr == addr) {
+
+                // TODO: update sensors values
+            }
+        }
     }
 
 } master_data_t;
