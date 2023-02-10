@@ -308,6 +308,7 @@ typedef struct master_data
 
     char *name;
     slave_t slaves[M_MAX_SLAVES_N];
+    bool freeslots[M_MAX_SLAVES_N] = {true};
     uint8_t n_slaves;
 
     uint8_t state;
@@ -396,8 +397,9 @@ typedef struct master_data
 
         if (n_slaves < M_MAX_SLAVES_N)
         {
-
-            slaves[n_slaves].addr = addr;
+            int8_t freeslot = getFirstFreeSlot();
+            this->freeslots[freeslot] = false;
+            slaves[freeslot].addr = addr;
             // TODO slave should send other parameters such as name, either here (master req) or in the sensor adv message
             n_slaves++;
 
@@ -405,10 +407,24 @@ typedef struct master_data
         }
     }
 
+    int8_t getFirstFreeSlot()
+    {
+        int8_t freeslot = -1;
+        for (int i = 0; i < M_MAX_SLAVES_N; i++)
+        {
+            if (freeslots[i])
+            {
+                freeslot = i;
+                break;
+            }
+        }
+        return freeslot;
+    }
+
     void addSlaveSensors(uint32_t addr, const JsonDocument &msg)
     {
 
-        for (int i = 0; i < this->n_slaves; i++)
+        for (int i = 0; i < M_MAX_SLAVES_N && !freeslots[i]; i++)
         {
 
             if (slaves[i].addr == addr)
