@@ -28,6 +28,8 @@ typedef struct slave_data
     uint32_t lastBroadcastMillis = 0;
     uint32_t lastAdvMillis = 0;
 
+    uint32_t minUpdateRate = 3;
+
     painlessMesh *mesh;
 
     slave_data(painlessMesh *mesh)
@@ -94,7 +96,7 @@ typedef struct slave_data
             if (type == 1)
             { // TODO: macro for msg types
                 this->masterAddr = from;
-                Serial.printf("m: %u, from %u\n\r", masterAddr, from);
+                Serial.printf("found master on: %u\n\r", from);
                 this->state = SS_SENS_ADV;
 #ifdef __S_SKIP_SENSOR_ADV__
                 this->state = SS_SENS_UPD;
@@ -103,7 +105,11 @@ typedef struct slave_data
             break;
 
         case SS_SENS_ADV:
-            sendSensorListAdv();
+            if (type == 3)
+            { // TODO: macro for msg types
+                Serial.printf("master %u has recieved sensor adv\n\r", from);
+                this->state = SS_SENS_UPD;
+            }
             break;
 
         case SS_SENS_UPD:
@@ -137,26 +143,28 @@ typedef struct slave_data
         StaticJsonDocument<512> msg; // TODO: define size as macro
         // Serial.printf("sens num: %d", sensors_n);
         msg["type"] = 2;
-        // msg["sensors"] =
-        // for (int i = 0; i < sensors_n; i++)
-        // {
-        //     // Serial.printf(
-        //     //     "{\n\tname: %s\n\ttype: %u\n\tval_type: %u\n\tupdate_rate: %u\n\tpin: %u\n},\n",
-        //     //     sensors[i].name,
-        //     //     sensors[i].type,
-        //     //     sensors[i].val_type,
-        //     //     sensors[i].update_rate,
-        //     //     sensors[i].pin);
-        //     // msg["name"] = sensors[i].name;
-        //     // TODO chage msg type
-        //     // msg["update_rate"] = sensors[i].update_rate;
-        // }
+
+        msg["min_update_rate"] = this->minUpdateRate;
+
+        JsonArray sensorsArray = msg.createNestedArray("sensors");
+
+        // ...then cycle through all sensors and add those that need to be updated
+        for (int i = 0; i < sensors_n; i++)
+        {
+
+            // Add data to message
+            JsonObject sensorObject = sensorsArray.createNestedObject();
+            sensorObject["type"] = sensors[i].type;
+            sensorObject["val_type"] = sensors[i].val_type;
+            sensorObject["update_rate"] = sensors[i].update_rate;
+            // sensorObject["timeout_period"] = sensors[i].timeout_period;
+        }
 
         // Serial.println((const char *)msg["name"]);
-        // Serial.println((const char *)msg["type"]);
-        // Serial.println((const char *)msg["update_rate"]);
-        // Serial.printf("------------------- mad: %d\n\r", masterAddr);
-        // // Serial.println(msg["type"]);
+        //  Serial.println((const char *)msg["type"]);
+        //  Serial.println((const char *)msg["update_rate"]);
+        //  Serial.printf("------------------- mad: %d\n\r", masterAddr);
+        //  // Serial.println(msg["type"]);
         serializeJson(msg, msgSerialized);
         Serial.println("serializd message...");
         mesh->sendSingle(masterAddr, msgSerialized);
@@ -213,7 +221,7 @@ typedef struct slave_data
     void loadConfig()
     {
 
-//  ----------------------------------------------------------------
+        //  ----------------------------------------------------------------
         if (!LittleFS.begin())
         {
             Serial.println("error: could not init LittleFS");
@@ -232,8 +240,8 @@ typedef struct slave_data
             Serial.printf("error: could not open config file (%s)\n", configFile);
         }
 
-//  TODO: make this code reusable (function) (not only to slave, but also master)
-//  ---------------------------------------------------------------
+        //  TODO: make this code reusable (function) (not only to slave, but also master)
+        //  ---------------------------------------------------------------
 
         StaticJsonDocument<STATIC_JSON_DOC_SIZE> configJson;
         deserializeJson(configJson, f.readString());
@@ -250,7 +258,7 @@ typedef struct slave_data
     {
 
         JsonArray sensorsJson = configJson["sensors"].as<JsonArray>();
-
+        uint32_t tmpMinUpdateRate = 2000;
         for (JsonObject s : sensorsJson)
         {
 
@@ -265,8 +273,17 @@ typedef struct slave_data
             sensors[sensors_n].val_type = (sensor_val_type_t)s["val_type"];
             sensors[sensors_n].update_rate = (uint8_t)s["update_rate"];
             sensors[sensors_n].pin = (uint8_t)s["pin"];
+
+            // stores fastest update rate
+            if (sensors[sensors_n].update_rate < tmpMinUpdateRate)
+            {
+                tmpMinUpdateRate = sensors[sensors_n].update_rate;
+            }
             sensors_n++;
         }
+        this->minUpdateRate = tmpMinUpdateRate;
+
+        Serial.printf("min updrt: %u", minUpdateRate);
     }
 
     void printSensors()
@@ -314,6 +331,13 @@ typedef struct master_data
 
     void masterLoop()
     {
+        currentMillis = millis();
+        // sendSensorListAdv();
+
+        if (currentMillis >= lastBroadcastMillis + BROADCAST_PERIOD)
+        {
+            lastBroadcastMillis = currentMillis;
+        }
     }
 
     void onReceive(uint32_t from, const JsonDocument &msg)
@@ -354,7 +378,8 @@ typedef struct master_data
         mesh->sendSingle(dest, msgSerialized);
     }
 
-    void sendSensorListAck(uint32_t dest) {
+    void sendSensorListAck(uint32_t dest)
+    {
 
         StaticJsonDocument<512> msg; // TODO: define size as macro
 
@@ -384,9 +409,9 @@ typedef struct master_data
 
             if (slaves[i].addr == addr) {
 
-                JsonArray sensors = msg["sensors"].as<JsonArray>();
+                JsonArrayConst sensors = msg["sensors"].as<JsonArrayConst>();
 
-                for (JsonObject s : sensors) {
+                for (JsonObjectConst s : sensors) {
 
                     if (slaves[i].n_sensors > M_MAX_SLAVE_SENSORS_N) break;
 
@@ -418,9 +443,10 @@ typedef struct master_data
 
 } master_data_t;
 
-node_role_t getNodeRole() {
+node_role_t getNodeRole()
+{
 
-//  ----------------------------------------------------------------
+    //  ----------------------------------------------------------------
     if (!LittleFS.begin())
     {
         Serial.println("error: could not init LittleFS");
@@ -442,8 +468,8 @@ node_role_t getNodeRole() {
         Serial.printf("warning: 'role' not specified in config file. Default value '%d' will be used.\n", NODE_DEFAULT_ROLE);
         return NODE_DEFAULT_ROLE;
     }
-//  TODO: make this code reusable (function)
-//  ---------------------------------------------------------------
+    //  TODO: make this code reusable (function)
+    //  ---------------------------------------------------------------
 
     StaticJsonDocument<STATIC_JSON_DOC_SIZE> configJson;
     deserializeJson(configJson, f.readString());
@@ -451,13 +477,15 @@ node_role_t getNodeRole() {
     JsonVariant jsonRole = configJson["role"];
     node_role_t role;
 
-    if (jsonRole.isNull()) {
+    if (jsonRole.isNull())
+    {
 
         Serial.printf("warning: 'role' not specified in config file. Default value '%d' will be used.\n", NODE_DEFAULT_ROLE);
         role = NODE_DEFAULT_ROLE;
     }
-    else {
-        role = (node_role_t) jsonRole;
+    else
+    {
+        role = (node_role_t)jsonRole;
     }
 
     Serial.printf("role: %d\n", role);
