@@ -141,26 +141,30 @@ typedef struct slave_data
         StaticJsonDocument<512> msg; // TODO: define size as macro
         // Serial.printf("sens num: %d", sensors_n);
         msg["type"] = 2;
-        // msg["sensors"] =
-        // for (int i = 0; i < sensors_n; i++)
-        // {
-        //     // Serial.printf(
-        //     //     "{\n\tname: %s\n\ttype: %u\n\tval_type: %u\n\tupdate_rate: %u\n\tpin: %u\n},\n",
-        //     //     sensors[i].name,
-        //     //     sensors[i].type,
-        //     //     sensors[i].val_type,
-        //     //     sensors[i].update_rate,
-        //     //     sensors[i].pin);
-        //     // msg["name"] = sensors[i].name;
-        //     // TODO chage msg type
-        //     // msg["update_rate"] = sensors[i].update_rate;
-        // }
+        // "type" : 1,
+        //     "val_type" : 3,
+        //     "update_rate" : 2,
+        //     "pin" : 14,
+        //     "timeout_period" : 10
+        JsonArray sensorsArray = msg.createNestedArray("sensors");
+
+        // ...then cycle through all sensors and add those that need to be updated
+        for (int i = 0; i < sensors_n; i++)
+        {
+
+            // Add data to message
+            JsonObject sensorObject = sensorsArray.createNestedObject();
+            sensorObject["type"] = sensors[i].type;
+            sensorObject["val_type"] = sensors[i].val_type;
+            sensorObject["update_rate"] = sensors[i].update_rate;
+            // sensorObject["timeout_period"] = sensors[i].timeout_period;
+        }
 
         // Serial.println((const char *)msg["name"]);
-        // Serial.println((const char *)msg["type"]);
-        // Serial.println((const char *)msg["update_rate"]);
-        // Serial.printf("------------------- mad: %d\n\r", masterAddr);
-        // // Serial.println(msg["type"]);
+        //  Serial.println((const char *)msg["type"]);
+        //  Serial.println((const char *)msg["update_rate"]);
+        //  Serial.printf("------------------- mad: %d\n\r", masterAddr);
+        //  // Serial.println(msg["type"]);
         serializeJson(msg, msgSerialized);
         Serial.println("serializd message...");
         mesh->sendSingle(masterAddr, msgSerialized);
