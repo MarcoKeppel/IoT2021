@@ -309,7 +309,6 @@ typedef struct master_data
     char *name;
     slave_t slaves[M_MAX_SLAVES_N];
     bool freeslots[M_MAX_SLAVES_N] = {true};
-    uint8_t n_slaves;
 
     uint8_t state;
     uint32_t currentMillis = 0;
@@ -323,7 +322,6 @@ typedef struct master_data
         this->mesh = mesh;
 
         this->state = MS_INIT;
-        n_slaves = 0;
     }
 
     void masterSetup()
@@ -394,14 +392,13 @@ typedef struct master_data
 
     void addSlave(uint32_t addr)
     {
-
+        int8_t n_slaves = getNSlaves();
         if (n_slaves < M_MAX_SLAVES_N)
         {
             int8_t freeslot = getFirstFreeSlot();
             this->freeslots[freeslot] = false;
             slaves[freeslot].addr = addr;
             // TODO slave should send other parameters such as name, either here (master req) or in the sensor adv message
-            n_slaves++;
 
             Serial.printf("New slave added to list: \n\taddr: %u\n#slaves: %d\n", addr, n_slaves);
         }
@@ -419,6 +416,20 @@ typedef struct master_data
             }
         }
         return freeslot;
+    }
+
+    uint8_t getNSlaves()
+    {
+        uint8_t nslaves = 0;
+        for (int i = 0; i < M_MAX_SLAVES_N; i++)
+        {
+            if (!freeslots[i])
+            {
+                nslaves++;
+            }
+        }
+
+        return nslaves;
     }
 
     void addSlaveSensors(uint32_t addr, const JsonDocument &msg)
@@ -455,8 +466,8 @@ typedef struct master_data
 
     void updateSensorValues(uint32_t addr, const JsonDocument &msg)
     {
-
-        for (int i = 0; i < this->n_slaves; i++)
+        uint8_t n_slaves = getNSlaves();
+        for (int i = 0; i < n_slaves; i++)
         {
 
             if (slaves[i].addr == addr)
