@@ -102,7 +102,7 @@ typedef struct master_data
         mesh->sendSingle(dest, msgSerialized);
     }
 
-    int findSlave(uint32_t addr, bool only_active = true)
+    int32_t findSlave(uint32_t addr, bool only_active = true)
     {
 
         for (int i = 0; i < M_MAX_SLAVES_N; i++)
@@ -133,16 +133,27 @@ typedef struct master_data
 
     void addSlave(uint32_t addr)
     {
-        uint8_t n_slaves = getNSlaves();
-        if (n_slaves < M_MAX_SLAVES_N)
-        {
-            int8_t freeslot = getFirstFreeSlot();
-            this->freeslots[freeslot] = false;
-            slaves[freeslot].addr = addr;
+        int32_t s = findSlave(addr, false);
 
-            // TODO slave should send other parameters such as name, either here (master req) or in the sensor adv message
+        // If the slave is already saved in memory
+        if (s >= 0) {
 
-            Serial.printf("New slave added to list: \n\taddr: %u\n#slaves: %u\n", addr, n_slaves + 1);
+            freeslots[s] = false;
+        }
+        // If it is not already saved in memory
+        else {
+            
+            uint8_t n_slaves = getNSlaves();
+            if (n_slaves < M_MAX_SLAVES_N)
+            {
+                int8_t freeslot = getFirstFreeSlot();
+                this->freeslots[freeslot] = false;
+                slaves[freeslot].addr = addr;
+
+                // TODO slave should send other parameters such as name, either here (master req) or in the sensor adv message
+
+                Serial.printf("New slave added to list: \n\taddr: %u\n#slaves: %u\n", addr, n_slaves + 1);
+            }
         }
     }
 
@@ -177,7 +188,7 @@ typedef struct master_data
     void addSlaveSensors(uint32_t addr, const JsonDocument &msg)
     {
 
-        uint32_t s = findSlave(addr);
+        int32_t s = findSlave(addr);
         if (s < 0)
             return;
 
@@ -204,7 +215,7 @@ typedef struct master_data
 
     void updateSensorValues(uint32_t addr, const JsonDocument &msg)
     {
-        uint32_t s = findSlave(addr);
+        int32_t s = findSlave(addr);
         if (s < 0)
             return;
 
