@@ -18,7 +18,7 @@ typedef struct master_data
 
     char *name;
     slave_t slaves[M_MAX_SLAVES_N];
-    bool freeslots[M_MAX_SLAVES_N] = {true};
+    bool freeslots[M_MAX_SLAVES_N];
 
     uint8_t state;
     uint32_t currentMillis = 0;
@@ -36,6 +36,9 @@ typedef struct master_data
 
     void masterSetup()
     {
+        for (int i = 0; i < M_MAX_SLAVES_N; i++) {
+            freeslots[i] = true;
+        }
     }
 
     void masterLoop()
@@ -87,6 +90,19 @@ typedef struct master_data
         mesh->sendSingle(dest, msgSerialized);
     }
 
+    int findSlave(uint32_t addr, bool only_active = true) {
+
+        for (int i = 0; i < M_MAX_SLAVES_N; i++) {
+
+            if (slaves[i].addr == addr && ((only_active && !freeslots[i]) || (!only_active))) {
+
+                return i;
+            }
+        }
+        
+        return -1;
+    }
+
     void sendSensorListAck(uint32_t dest)
     {
 
@@ -102,7 +118,7 @@ typedef struct master_data
 
     void addSlave(uint32_t addr)
     {
-        int8_t n_slaves = getNSlaves();
+        uint8_t n_slaves = getNSlaves();
         if (n_slaves < M_MAX_SLAVES_N)
         {
             int8_t freeslot = getFirstFreeSlot();
@@ -110,7 +126,7 @@ typedef struct master_data
             slaves[freeslot].addr = addr;
             // TODO slave should send other parameters such as name, either here (master req) or in the sensor adv message
 
-            Serial.printf("New slave added to list: \n\taddr: %u\n#slaves: %d\n", addr, n_slaves);
+            Serial.printf("New slave added to list: \n\taddr: %u\n#slaves: %u\n", addr, n_slaves+1);
         }
     }
 
@@ -145,46 +161,38 @@ typedef struct master_data
     void addSlaveSensors(uint32_t addr, const JsonDocument &msg)
     {
 
-        for (int i = 0; i < M_MAX_SLAVES_N && !freeslots[i]; i++)
+        uint32_t s = findSlave(addr);
+        if (s < 0) return;
+
+        JsonArrayConst sensors = msg["sensors"].as<JsonArrayConst>();
+        slaves[s].keepalive_period = msg["min_update_rate"];
+        for (JsonObjectConst s : sensors)
         {
 
-            if (slaves[i].addr == addr)
-            {
-
-                JsonArrayConst sensors = msg["sensors"].as<JsonArrayConst>();
-                slaves[i].keepalive_period = msg["min_update_rate"];
-                for (JsonObjectConst s : sensors)
-                {
-
-                    if (slaves[i].n_sensors > M_MAX_SLAVE_SENSORS_N)
-                        break;
-
-                    sensor_t *sensor = &(slaves[i].sensors[slaves[i].n_sensors]);
-
-                    // TODO: sensor->name
-                    sensor->type = s["type"];
-                    sensor->val_type = s["val_type"];
-                    sensor->update_rate = s["update_rate"];
-
-                    slaves[i].n_sensors++;
-                }
-                Serial.printf("SLAVE KEEPALIVE: %u", slaves[i].keepalive_period);
+            if (slaves[s].n_sensors > M_MAX_SLAVE_SENSORS_N)
                 break;
-            }
+
+            sensor_t *sensor = &(slaves[s].sensors[slaves[s].n_sensors]);
+
+            // TODO: sensor->name
+            sensor->type = s["type"];
+            sensor->val_type = s["val_type"];
+            sensor->update_rate = s["update_rate"];
+
+            slaves[s].n_sensors++;
         }
+        Serial.printf("SLAVE KEEPALIVE: %u", slaves[s].keepalive_period);
     }
 
     void updateSensorValues(uint32_t addr, const JsonDocument &msg)
     {
-        uint8_t n_slaves = getNSlaves();
-        for (int i = 0; i < n_slaves; i++)
-        {
+        uint32_t s = findSlave(addr);
+        if (s < 0) return;
 
-            if (slaves[i].addr == addr)
-            {
-
-                // TODO: update sensors values
-            }
+        // Update sensors values
+        JsonArrayConst sensors = msg["sensors"].as<JsonArrayConst>();
+        for (JsonObjectConst sensor : sensors) {
+            slaves[s].sensors[(uint32_t) sensor["index"]].val = (uint32_t) sensor["val"];       // TODO: should be more generic than int
         }
     }
 
