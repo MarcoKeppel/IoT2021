@@ -119,6 +119,7 @@ typedef struct slave_data
             if (type == MSG_KEEPALIVE)
             { // TODO: macro for msg types
                 Serial.printf("we received a KEEPALIVE! ;)\n\r");
+                sendKeepaliveAck();
             }
             break;
         }

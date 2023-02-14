@@ -60,7 +60,7 @@ typedef struct master_data
                 if (slaves[i].keepalive_period != -1)
                 {
                     sendKeepalive(slaves[i].addr);
-                    slaves[i].keepalive_counter--;
+
                     if (slaves[i].keepalive_counter <= 0)
                     {
                         slaves[i].kill_countdown--;
@@ -68,6 +68,10 @@ typedef struct master_data
                         {
                             Serial.printf("UCCIDI LO SLAVE %u \n\r", i);
                         }
+                    }
+                    else
+                    {
+                        slaves[i].keepalive_counter--;
                     }
                 }
                 else
