@@ -59,7 +59,6 @@ typedef struct master_data
 
                 if (slaves[i].keepalive_period != -1)
                 {
-                    sendKeepalive(slaves[i].addr);
 
                     if (slaves[i].keepalive_counter <= 0)
                     {
@@ -68,6 +67,7 @@ typedef struct master_data
                         {
                             Serial.printf("UCCIDI LO SLAVE %u \n\r", i);
                         }
+                        sendKeepalive(slaves[i].addr);
                     }
                     else
                     {
@@ -79,7 +79,7 @@ typedef struct master_data
                     Serial.printf("slave %u is not ready yet \n\r", i);
                 }
 
-                Serial.printf("slave n: %u kc: %d kill_in: %d\n\r", i, slaves[i].keepalive_counter, slaves[i].kill_countdown);
+                Serial.printf("kc: %d kill_in: %d\n\r", slaves[i].keepalive_counter, slaves[i].kill_countdown);
             }
         }
     }
@@ -121,7 +121,7 @@ typedef struct master_data
             slaves[s].keepalive_counter = slaves[s].keepalive_period;
         }
 
-        Serial.printf("slave %u with address %u saved", s, addr);
+        Serial.printf("slave %u with address %u saved\n\r", s, addr);
     }
 
     void sendMasterAddrResp(uint32_t dest)
