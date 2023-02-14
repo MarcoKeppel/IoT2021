@@ -24,6 +24,7 @@ typedef struct master_data
     uint32_t currentMillis = 0;
     uint32_t lastSensorsUpdateMillis = 0;
     uint32_t lastBroadcastMillis = 0;
+    uint32_t lastKeepaliveMillis = 0;
     painlessMesh *mesh;
 
     master_data(painlessMesh *mesh)
@@ -43,9 +44,18 @@ typedef struct master_data
         currentMillis = millis();
         // sendSensorListAdv();
 
-        if (currentMillis >= lastBroadcastMillis + BROADCAST_PERIOD)
+        if (currentMillis >= lastKeepaliveMillis + KEEPALIVE_PERIOD)
         {
-            lastBroadcastMillis = currentMillis;
+            lastKeepaliveMillis = currentMillis;
+            for (int i = 0; i < M_MAX_SLAVES_N && !freeslots[i]; i++)
+            {
+
+                slaves[i].keepalive_counter--;
+                if (slaves[i].keepalive_counter <= slaves[i].keepalive_period)
+                {
+                    Serial.printf("slave n: %u kc: %u kp: %u", i, slaves[i].keepalive_counter, slaves[i].keepalive_period);
+                }
+            }
         }
     }
 
@@ -108,6 +118,7 @@ typedef struct master_data
             int8_t freeslot = getFirstFreeSlot();
             this->freeslots[freeslot] = false;
             slaves[freeslot].addr = addr;
+
             // TODO slave should send other parameters such as name, either here (master req) or in the sensor adv message
 
             Serial.printf("New slave added to list: \n\taddr: %u\n#slaves: %d\n", addr, n_slaves);
@@ -153,6 +164,7 @@ typedef struct master_data
 
                 JsonArrayConst sensors = msg["sensors"].as<JsonArrayConst>();
                 slaves[i].keepalive_period = msg["min_update_rate"];
+                slaves[i].keepalive_counter = slaves[i].keepalive_period;
                 for (JsonObjectConst s : sensors)
                 {
 
