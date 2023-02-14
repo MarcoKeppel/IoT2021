@@ -52,6 +52,7 @@ typedef struct
     uint8_t n_sensors = 0;
     uint32_t keepalive_period;
     uint32_t keepalive_counter;
+    uint32_t kill_countdown = KEEPALIVE_KILL_PERIODS;
 
 } slave_t;
 

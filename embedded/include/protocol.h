@@ -1,0 +1,17 @@
+#ifndef __PROTOCOL_H__
+#define __PROTOCOL_H__
+
+#define MSG_ROOT_ID_REQ 0
+#define MSG_ROOT_ID_RESP 1
+
+#define MSG_SENSOR_LIST_ADV 2
+#define MSG_SENSOR_LIST_ACK 3
+#define MSG_SENSOR_VALUE_REQ 8
+#define MSG_SENSOR_VALUE_RESP 9
+
+#define MSG_KEEPALIVE 10
+#define MSG_KEEPALIVE_ACK 11
+
+#define MSG_SLAVE_RESET 255
+
+#endif
