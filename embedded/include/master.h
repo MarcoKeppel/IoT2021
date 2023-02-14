@@ -55,10 +55,11 @@ typedef struct master_data
             {
 
                 slaves[i].keepalive_counter--;
-                if (slaves[i].keepalive_counter <= slaves[i].keepalive_period)
+                if (slaves[i].keepalive_counter <= 0)
                 {
-                    Serial.printf("slave n: %u kc: %u kp: %u", i, slaves[i].keepalive_counter, slaves[i].keepalive_period);
+                    slaves[i].keepalive_counter = slaves[i].keepalive_period;
                 }
+                Serial.printf("slave n: %u kc: %u kp: %u\n\r", i, slaves[i].keepalive_counter, slaves[i].keepalive_period);
             }
         }
     }
