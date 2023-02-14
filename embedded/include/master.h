@@ -14,7 +14,6 @@
 #include <painlessMesh.h>
 #include <ArduinoJson.h>
 
-
 // TODO: even after sensor advertisement reply is sent, sensor data should not be read as it will not be valid (either 0 or old data from another slave)
 
 typedef struct master_data
@@ -60,10 +59,10 @@ typedef struct master_data
 
                 if (slaves[i].keepalive_period != -1)
                 {
+                    sendKeepalive(slaves[i].addr);
                     slaves[i].keepalive_counter--;
                     if (slaves[i].keepalive_counter <= 0)
                     {
-                        // slaves[i].keepalive_counter = slaves[i].keepalive_period;
                         slaves[i].kill_countdown--;
                         if (slaves[i].kill_countdown <= 0)
                         {
@@ -76,7 +75,7 @@ typedef struct master_data
                     Serial.printf("slave %u is not ready yet \n\r", i);
                 }
 
-                Serial.printf("slave n: %u kc: %u kp: %u kill_in: %u\n\r", i, slaves[i].keepalive_counter, slaves[i].keepalive_period, slaves[i].kill_countdown);
+                Serial.printf("slave n: %u kc: %d kill_in: %d\n\r", i, slaves[i].keepalive_counter, slaves[i].kill_countdown);
             }
         }
     }
