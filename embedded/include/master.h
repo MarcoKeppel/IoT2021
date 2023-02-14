@@ -13,6 +13,9 @@
 #include <painlessMesh.h>
 #include <ArduinoJson.h>
 
+
+// TODO: even after sensor advertisement reply is sent, sensor data should not be read as it will not be valid (either 0 or old data from another slave)
+
 typedef struct master_data
 {
 
@@ -219,6 +222,7 @@ typedef struct master_data
 
     void updateSensorValues(uint32_t addr, const JsonDocument &msg)
     {
+
         int32_t s = findSlave(addr);
         if (s < 0)
             return;
