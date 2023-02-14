@@ -31,6 +31,9 @@ typedef struct slave_data
 
     painlessMesh *mesh;
 
+    char msg_str[100];
+    char state_str[100];
+
     slave_data(painlessMesh *mesh)
     {
         this->mesh = mesh;
@@ -87,8 +90,7 @@ typedef struct slave_data
     {
 
         uint8_t type = (uint8_t)msg["type"];
-        char msg_str[100];
-        char state_str[100];
+
         stateType(state_str, state);
         msgType(msg_str, type);
         Serial.printf("msgype: %s, curstate %s\n\r", msg_str, state_str);
@@ -123,7 +125,8 @@ typedef struct slave_data
             break;
         }
 
-        Serial.printf("newstate: %u\n\r", state);
+        stateType(state_str, state);
+        Serial.printf("newstate: %s\n\r", state_str);
     }
 
     void sendMasterAddrReq()
