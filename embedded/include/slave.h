@@ -87,7 +87,11 @@ typedef struct slave_data
     {
 
         uint8_t type = (uint8_t)msg["type"];
-        Serial.printf("msgype: %u, curstate %u\n\r", type, state);
+        char msg_str[100];
+        char state_str[100];
+        stateType(state_str, state);
+        msgType(msg_str, type);
+        Serial.printf("msgype: %s, curstate %s\n\r", msg_str, state_str);
         switch (state)
         {
 
