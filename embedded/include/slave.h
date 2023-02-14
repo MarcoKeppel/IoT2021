@@ -94,24 +94,21 @@ typedef struct slave_data
 
         stateType(state_str, state);
         msgType(msg_str, type);
-        Serial.printf("msgype: %s, curstate %s\n\r", msg_str, state_str);
+        Serial.printf("msgtype: %s, curstate %s\n\r", msg_str, state_str);
         switch (state)
         {
 
         case SS_MASTER_REQ:
-            if (type == 1)
+            if (type == MSG_ROOT_ID_RESP)
             { // TODO: macro for msg types
                 this->masterAddr = from;
                 Serial.printf("found master on: %u\n\r", from);
                 this->state = SS_SENS_ADV;
-#ifdef __S_SKIP_SENSOR_ADV__
-                this->state = SS_SENS_UPD;
-#endif
             }
             break;
 
         case SS_SENS_ADV:
-            if (type == 3)
+            if (type == MSG_SENSOR_LIST_ACK)
             { // TODO: macro for msg types
                 Serial.printf("master %u has recieved sensor adv\n\r", from);
                 this->state = SS_SENS_UPD;
@@ -119,15 +116,27 @@ typedef struct slave_data
             break;
 
         case SS_SENS_UPD:
-            if (currentMillis > lastSensorsUpdateMillis + SENSORS_UPDATE_PERIOD)
-            {
-                sendSensorValUpdate();
+            if (type == MSG_KEEPALIVE)
+            { // TODO: macro for msg types
+                Serial.printf("we received a KEEPALIVE! ;)\n\r");
             }
             break;
         }
 
         stateType(state_str, state);
         Serial.printf("newstate: %s\n\r", state_str);
+    }
+    void sendKeepaliveAck()
+    {
+
+        StaticJsonDocument<512> msg; // TODO: define size as macro
+
+        msg["id"] = mesh->getNodeId();
+        msg["type"] = MSG_KEEPALIVE_ACK; // TODO: define types more formally
+
+        char msgSerialized[256]; // TODO: define size as macro
+        serializeJson(msg, msgSerialized);
+        mesh->sendSingle(masterAddr, msgSerialized);
     }
 
     void sendMasterAddrReq()

@@ -55,16 +55,24 @@ typedef struct master_data
             for (int i = 0; i < M_MAX_SLAVES_N && !freeslots[i]; i++)
             {
 
-                slaves[i].keepalive_counter--;
-                if (slaves[i].keepalive_counter <= 0)
+                if (slaves[i].keepalive_period != -1)
                 {
-                    // slaves[i].keepalive_counter = slaves[i].keepalive_period;
-                    slaves[i].kill_countdown--;
-                    if (slaves[i].kill_countdown <= 0)
+                    slaves[i].keepalive_counter--;
+                    if (slaves[i].keepalive_counter <= 0)
                     {
-                        Serial.printf("UCCIDI LO SLAVE %u \n\r", i);
+                        // slaves[i].keepalive_counter = slaves[i].keepalive_period;
+                        slaves[i].kill_countdown--;
+                        if (slaves[i].kill_countdown <= 0)
+                        {
+                            Serial.printf("UCCIDI LO SLAVE %u \n\r", i);
+                        }
                     }
                 }
+                else
+                {
+                    Serial.printf("slave %u is not ready yet \n\r", i);
+                }
+
                 Serial.printf("slave n: %u kc: %u kp: %u kill_in: %u\n\r", i, slaves[i].keepalive_counter, slaves[i].keepalive_period, slaves[i].kill_countdown);
             }
         }
@@ -80,19 +88,34 @@ typedef struct master_data
         switch (type)
         {
 
-        case 0: // TODO check if new slaves can be added, return error if not (protocol to be defined)
+        case MSG_ROOT_ID_REQ: // TODO check if new slaves can be added, return error if not (protocol to be defined)
             addSlave(from);
             sendMasterAddrResp(from);
             break;
 
-        case 2:
+        case MSG_SENSOR_LIST_ADV:
             addSlaveSensors(from, msg); // TODO: return status (e.g. if slave does not exist, do not return ack and return error instead (protocol to be defined))
             sendSensorListAck(from);
             break;
-        case 9:
+        case MSG_SENSOR_VALUE_RESP:
             updateSensorValues(from, msg);
             break;
+        case MSG_KEEPALIVE_ACK:
+            slaveIsAlive(from);
+            break;
         }
+    }
+
+    void slaveIsAlive(uint32_t addr)
+    {
+        int32_t s = findSlave(addr);
+        if (s != -1)
+        {
+            slaves[s].kill_countdown = KEEPALIVE_KILL_PERIODS;
+            slaves[s].keepalive_counter = slaves[s].keepalive_period;
+        }
+
+        Serial.printf("slave %u with address %u saved", s, addr);
     }
 
     void sendMasterAddrResp(uint32_t dest)
@@ -155,14 +178,16 @@ typedef struct master_data
         int32_t s = findSlave(addr, false);
 
         // If the slave is already saved in memory
-        if (s >= 0) {
+        if (s >= 0)
+        {
 
             Serial.printf("Found slave at index %d\n", s);
 
             freeslots[s] = false;
         }
         // If it is not already saved in memory
-        else {
+        else
+        {
 
             Serial.printf("Slave not found\n");
 

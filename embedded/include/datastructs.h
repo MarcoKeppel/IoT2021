@@ -50,9 +50,9 @@ typedef struct
     char *name;
     sensor_t sensors[M_MAX_SLAVE_SENSORS_N];
     uint8_t n_sensors = 0;
-    uint32_t keepalive_period;
-    uint32_t keepalive_counter;
-    uint32_t kill_countdown = KEEPALIVE_KILL_PERIODS;
+    int32_t keepalive_period = -1;
+    int32_t keepalive_counter;
+    int32_t kill_countdown = KEEPALIVE_KILL_PERIODS;
 
 } slave_t;
 
