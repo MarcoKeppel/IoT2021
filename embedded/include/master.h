@@ -10,6 +10,7 @@
 
 #include "datastructs.h"
 #include "states.h"
+#include "protocol.h"
 #include <painlessMesh.h>
 #include <ArduinoJson.h>
 
@@ -57,9 +58,14 @@ typedef struct master_data
                 slaves[i].keepalive_counter--;
                 if (slaves[i].keepalive_counter <= 0)
                 {
-                    slaves[i].keepalive_counter = slaves[i].keepalive_period;
+                    // slaves[i].keepalive_counter = slaves[i].keepalive_period;
+                    slaves[i].kill_countdown--;
+                    if (slaves[i].kill_countdown <= 0)
+                    {
+                        Serial.printf("UCCIDI LO SLAVE %u \n\r", i);
+                    }
                 }
-                Serial.printf("slave n: %u kc: %u kp: %u\n\r", i, slaves[i].keepalive_counter, slaves[i].keepalive_period);
+                Serial.printf("slave n: %u kc: %u kp: %u kill_in: %u\n\r", i, slaves[i].keepalive_counter, slaves[i].keepalive_period, slaves[i].kill_countdown);
             }
         }
     }
@@ -95,7 +101,20 @@ typedef struct master_data
         StaticJsonDocument<512> msg; // TODO: define size as macro
 
         msg["id"] = mesh->getNodeId();
-        msg["type"] = 1; // TODO: define types more formally
+        msg["type"] = MSG_ROOT_ID_RESP; // TODO: define types more formally
+
+        char msgSerialized[256]; // TODO: define size as macro
+        serializeJson(msg, msgSerialized);
+        mesh->sendSingle(dest, msgSerialized);
+    }
+
+    void sendKeepalive(uint32_t dest)
+    {
+
+        StaticJsonDocument<512> msg; // TODO: define size as macro
+
+        msg["id"] = mesh->getNodeId();
+        msg["type"] = MSG_KEEPALIVE; // TODO: define types more formally
 
         char msgSerialized[256]; // TODO: define size as macro
         serializeJson(msg, msgSerialized);
@@ -124,7 +143,7 @@ typedef struct master_data
         StaticJsonDocument<512> msg; // TODO: define size as macro
 
         msg["id"] = mesh->getNodeId();
-        msg["type"] = 3; // TODO: define types more formally
+        msg["type"] = MSG_SENSOR_LIST_ACK; // TODO: define types more formally
 
         char msgSerialized[256]; // TODO: define size as macro
         serializeJson(msg, msgSerialized);

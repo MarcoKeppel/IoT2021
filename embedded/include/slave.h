@@ -10,6 +10,7 @@
 
 #include "datastructs.h"
 #include "states.h"
+#include "protocol.h"
 #include <painlessMesh.h>
 #include <ArduinoJson.h>
 typedef struct slave_data
@@ -135,7 +136,7 @@ typedef struct slave_data
         StaticJsonDocument<512> msg; // TODO: define size as macro
 
         msg["id"] = mesh->getNodeId();
-        msg["type"] = 0; // TODO: define types more formally
+        msg["type"] = MSG_ROOT_ID_REQ; // TODO: define types more formally
 
         char msgSerialized[256]; // TODO: define size as macro
         serializeJson(msg, msgSerialized);
@@ -148,7 +149,7 @@ typedef struct slave_data
         char msgSerialized[256];     // TODO: define size as macro
         StaticJsonDocument<512> msg; // TODO: define size as macro
         // Serial.printf("sens num: %d", sensors_n);
-        msg["type"] = 2;
+        msg["type"] = MSG_SENSOR_LIST_ADV;
 
         msg["min_update_rate"] = this->minUpdateRate;
 

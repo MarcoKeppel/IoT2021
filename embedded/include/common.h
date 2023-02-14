@@ -10,6 +10,7 @@
 
 #include "datastructs.h"
 #include "states.h"
+#include "protocol.h"
 #include <painlessMesh.h>
 #include <ArduinoJson.h>
 
@@ -69,35 +70,35 @@ void msgType(char *msg_ptr, uint32_t id)
 
     switch (id)
     {
-    case 0:
+    case MSG_ROOT_ID_REQ:
         strcpy(msg_ptr, "root_ID_request");
         break;
-    case 1:
+    case MSG_ROOT_ID_RESP:
         strcpy(msg_ptr, "root_ID_response");
         break;
-    case 2:
-        strcpy(msg_ptr, "root_ID_request");
+    case MSG_SENSOR_LIST_ADV:
+        strcpy(msg_ptr, "sensor_list_adv");
         break;
-    case 3:
+    case MSG_SENSOR_LIST_ACK:
         strcpy(msg_ptr, "sensor_list_ack");
         break;
-    case 8:
+    case MSG_SENSOR_VALUE_REQ:
         strcpy(msg_ptr, "sensor_value_req");
         break;
-    case 9:
+    case MSG_SENSOR_VALUE_RESP:
         strcpy(msg_ptr, "sensor_value_resp");
         break;
-    case 10:
+    case MSG_KEEPALIVE:
         strcpy(msg_ptr, "keepalive");
         break;
-    case 11:
+    case MSG_KEEPALIVE_ACK:
         strcpy(msg_ptr, "keepalive_ack");
         break;
-    case 255:
-        strcpy(msg_ptr, "slave");
+    case MSG_SLAVE_RESET:
+        strcpy(msg_ptr, "slave reset");
         break;
     default:
-        strcpy(msg_ptr, "unkown message");
+        strcpy(msg_ptr, "unknown message");
         break;
     }
 }
