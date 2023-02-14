@@ -138,11 +138,15 @@ typedef struct master_data
         // If the slave is already saved in memory
         if (s >= 0) {
 
+            Serial.printf("Found slave at index %d\n", s);
+
             freeslots[s] = false;
         }
         // If it is not already saved in memory
         else {
-            
+
+            Serial.printf("Slave not found\n");
+
             uint8_t n_slaves = getNSlaves();
             if (n_slaves < M_MAX_SLAVES_N)
             {
