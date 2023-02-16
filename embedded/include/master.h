@@ -70,6 +70,7 @@ typedef struct master_data
                         if (slaves[i].kill_countdown <= 0)
                         {
                             Serial.printf("UCCIDI LO SLAVE %u \n\r", i);
+                            killSlave(i);
                             // TODO: remove the slave
                         }
                         sendKeepalive(slaves[i].addr);
@@ -133,8 +134,8 @@ typedef struct master_data
     void sendSlaveReset(uint32_t dest)
     {
 
-        uint32_t i = findSlave(dest);
-        if (i == -1)
+        int32_t i = findSlave(dest);
+        if (i != -1)
         {
             slaves[i].is_ready = false;
         }
