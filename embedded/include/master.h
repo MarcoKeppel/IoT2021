@@ -11,6 +11,8 @@
 #include "datastructs.h"
 #include "states.h"
 #include "protocol.h"
+#include "common.h"
+
 #include <painlessMesh.h>
 #include <ArduinoJson.h>
 
@@ -30,6 +32,8 @@ typedef struct master_data
     uint32_t lastKeepaliveMillis = 0;
     painlessMesh *mesh;
 
+    char msg_str[100];
+    char state_str[100];
     master_data(painlessMesh *mesh)
     {
 
@@ -89,8 +93,14 @@ typedef struct master_data
     {
 
         uint8_t type = (uint8_t)msg["type"];
+        msgType(msg_str, type);
+        Serial.printf("msgtype: %s, from %u\n\r", msg_str, from);
 
-        Serial.printf("Message:\n\tfrom: %u\n\ttype: %u\n", from, type);
+        if (findSlave(from) == -1 && type != MSG_ROOT_ID_REQ)
+        {
+            sendSlaveReset(from);
+            return;
+        }
 
         switch (type)
         {
@@ -111,6 +121,18 @@ typedef struct master_data
             slaveIsAlive(from);
             break;
         }
+    }
+
+    void sendSlaveReset(uint32_t dest)
+    {
+        StaticJsonDocument<512> msg; // TODO: define size as macro
+
+        msg["id"] = mesh->getNodeId();
+        msg["type"] = MSG_SLAVE_RESET; // TODO: define types more formally
+
+        char msgSerialized[256]; // TODO: define size as macro
+        serializeJson(msg, msgSerialized);
+        mesh->sendSingle(dest, msgSerialized);
     }
 
     void slaveIsAlive(uint32_t addr)
