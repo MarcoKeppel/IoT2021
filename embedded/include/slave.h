@@ -11,6 +11,8 @@
 #include "datastructs.h"
 #include "states.h"
 #include "protocol.h"
+#include "common.h"
+
 #include <painlessMesh.h>
 #include <ArduinoJson.h>
 typedef struct slave_data
