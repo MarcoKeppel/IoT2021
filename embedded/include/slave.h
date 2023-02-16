@@ -102,7 +102,7 @@ typedef struct slave_data
 
         case SS_MASTER_REQ:
             if (type == MSG_ROOT_ID_RESP)
-            { // TODO: macro for msg types
+            {
                 this->masterAddr = from;
                 Serial.printf("found master on: %u\n\r", from);
                 this->state = SS_SENS_ADV;
@@ -111,7 +111,7 @@ typedef struct slave_data
 
         case SS_SENS_ADV:
             if (type == MSG_SENSOR_LIST_ACK)
-            { // TODO: macro for msg types
+            {
                 Serial.printf("master %u has recieved sensor adv\n\r", from);
                 this->state = SS_SENS_UPD;
             }
@@ -119,7 +119,7 @@ typedef struct slave_data
 
         case SS_SENS_UPD:
             if (type == MSG_KEEPALIVE)
-            { // TODO: macro for msg types
+            {
                 Serial.printf("we received a KEEPALIVE! ;)\n\r");
                 sendKeepaliveAck();
             }
@@ -138,12 +138,12 @@ typedef struct slave_data
     void sendKeepaliveAck()
     {
 
-        StaticJsonDocument<512> msg; // TODO: define size as macro
+        StaticJsonDocument<STATIC_JSON_DOC_SIZE> msg;
 
         msg["id"] = mesh->getNodeId();
-        msg["type"] = MSG_KEEPALIVE_ACK; // TODO: define types more formally
+        msg["type"] = MSG_KEEPALIVE_ACK;
 
-        char msgSerialized[256]; // TODO: define size as macro
+        char msgSerialized[SERIALIZED_JSON_MSG_SIZE];
         serializeJson(msg, msgSerialized);
         mesh->sendSingle(masterAddr, msgSerialized);
     }
@@ -151,12 +151,12 @@ typedef struct slave_data
     void sendMasterAddrReq()
     {
 
-        StaticJsonDocument<512> msg; // TODO: define size as macro
+        StaticJsonDocument<STATIC_JSON_DOC_SIZE> msg;
 
         msg["id"] = mesh->getNodeId();
-        msg["type"] = MSG_ROOT_ID_REQ; // TODO: define types more formally
+        msg["type"] = MSG_ROOT_ID_REQ;
 
-        char msgSerialized[256]; // TODO: define size as macro
+        char msgSerialized[SERIALIZED_JSON_MSG_SIZE];
         serializeJson(msg, msgSerialized);
         mesh->sendBroadcast(msgSerialized, true);
     }
@@ -164,8 +164,8 @@ typedef struct slave_data
     void sendSensorListAdv()
     {
         Serial.println("sending sens...");
-        char msgSerialized[256];     // TODO: define size as macro
-        StaticJsonDocument<512> msg; // TODO: define size as macro
+        char msgSerialized[SERIALIZED_JSON_MSG_SIZE];
+        StaticJsonDocument<STATIC_JSON_DOC_SIZE> msg;
         // Serial.printf("sens num: %d", sensors_n);
         msg["type"] = MSG_SENSOR_LIST_ADV;
 
@@ -202,9 +202,9 @@ typedef struct slave_data
         lastSensorsUpdateMillis = currentMillis;
 
         // Create JSON doc...
-        StaticJsonDocument<512> msg; // TODO: define size as macro
+        StaticJsonDocument<STATIC_JSON_DOC_SIZE> msg;
         msg["id"] = mesh->getNodeId();
-        msg["type"] = 9; // TODO: define types more formally
+        msg["type"] = MSG_SENSOR_VALUE_RESP;
         JsonArray sensorsArray = msg.createNestedArray("sensors");
 
         // ...then cycle through all sensors and add those that need to be updated
@@ -236,8 +236,7 @@ typedef struct slave_data
         if (!(sensorsArray.size() <= 0))
         {
 
-            char msgSerialized[256]; // TODO: define size as macro
-            // String msgSerialized;
+            char msgSerialized[SERIALIZED_JSON_MSG_SIZE];
             serializeJson(msg, msgSerialized);
             mesh->sendSingle(masterAddr, msgSerialized);
         }

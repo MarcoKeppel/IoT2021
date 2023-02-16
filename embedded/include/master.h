@@ -125,12 +125,12 @@ typedef struct master_data
 
     void sendSlaveReset(uint32_t dest)
     {
-        StaticJsonDocument<512> msg; // TODO: define size as macro
+        StaticJsonDocument<STATIC_JSON_DOC_SIZE> msg;
 
         msg["id"] = mesh->getNodeId();
-        msg["type"] = MSG_SLAVE_RESET; // TODO: define types more formally
+        msg["type"] = MSG_SLAVE_RESET;
 
-        char msgSerialized[256]; // TODO: define size as macro
+        char msgSerialized[SERIALIZED_JSON_MSG_SIZE];
         serializeJson(msg, msgSerialized);
         mesh->sendSingle(dest, msgSerialized);
     }
@@ -150,12 +150,12 @@ typedef struct master_data
     void sendMasterAddrResp(uint32_t dest)
     {
 
-        StaticJsonDocument<512> msg; // TODO: define size as macro
+        StaticJsonDocument<STATIC_JSON_DOC_SIZE> msg;
 
         msg["id"] = mesh->getNodeId();
-        msg["type"] = MSG_ROOT_ID_RESP; // TODO: define types more formally
+        msg["type"] = MSG_ROOT_ID_RESP;
 
-        char msgSerialized[256]; // TODO: define size as macro
+        char msgSerialized[SERIALIZED_JSON_MSG_SIZE];
         serializeJson(msg, msgSerialized);
         mesh->sendSingle(dest, msgSerialized);
     }
@@ -163,12 +163,12 @@ typedef struct master_data
     void sendKeepalive(uint32_t dest)
     {
 
-        StaticJsonDocument<512> msg; // TODO: define size as macro
+        StaticJsonDocument<STATIC_JSON_DOC_SIZE> msg;
 
         msg["id"] = mesh->getNodeId();
-        msg["type"] = MSG_KEEPALIVE; // TODO: define types more formally
+        msg["type"] = MSG_KEEPALIVE;
 
-        char msgSerialized[256]; // TODO: define size as macro
+        char msgSerialized[SERIALIZED_JSON_MSG_SIZE];
         serializeJson(msg, msgSerialized);
         mesh->sendSingle(dest, msgSerialized);
     }
@@ -192,12 +192,12 @@ typedef struct master_data
     void sendSensorListAck(uint32_t dest)
     {
 
-        StaticJsonDocument<512> msg; // TODO: define size as macro
+        StaticJsonDocument<STATIC_JSON_DOC_SIZE> msg;
 
         msg["id"] = mesh->getNodeId();
-        msg["type"] = MSG_SENSOR_LIST_ACK; // TODO: define types more formally
+        msg["type"] = MSG_SENSOR_LIST_ACK;
 
-        char msgSerialized[256]; // TODO: define size as macro
+        char msgSerialized[SERIALIZED_JSON_MSG_SIZE];
         serializeJson(msg, msgSerialized);
         mesh->sendSingle(dest, msgSerialized);
     }

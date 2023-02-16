@@ -1,5 +1,3 @@
-// TODO: enums or macros for states?
-
 #ifndef __STATES_H__
 #define __STATES_H__
 
