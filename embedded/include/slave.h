@@ -126,6 +126,12 @@ typedef struct slave_data
             break;
         }
 
+        // Special command: slave reset (MSG_SLAVE_RESET 255)
+        if (type == MSG_SLAVE_RESET) {
+            Serial.printf("!slave reset command from master!\n");
+            this->state = SS_MASTER_REQ;
+        }
+
         stateType(state_str, state);
         Serial.printf("newstate: %s\n\r", state_str);
     }
