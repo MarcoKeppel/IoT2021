@@ -53,6 +53,7 @@ typedef struct
     int32_t keepalive_period = -1;
     int32_t keepalive_counter;
     int32_t kill_countdown = KEEPALIVE_KILL_PERIODS;
+    bool is_ready = false;
 
 } slave_t;
 
