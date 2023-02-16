@@ -70,6 +70,7 @@ typedef struct master_data
                         if (slaves[i].kill_countdown <= 0)
                         {
                             Serial.printf("UCCIDI LO SLAVE %u \n\r", i);
+                            killSlave(i);
                             // TODO: remove the slave
                         }
                         sendKeepalive(slaves[i].addr);
@@ -84,7 +85,7 @@ typedef struct master_data
                     Serial.printf("slave %u is not ready yet \n\r", i);
                 }
 
-                Serial.printf("kc: %d kill_in: %d\n\r", slaves[i].keepalive_counter, slaves[i].kill_countdown);
+                // Serial.printf("kc: %d kill_in: %d\n\r", slaves[i].keepalive_counter, slaves[i].kill_countdown);
             }
         }
     }
@@ -98,6 +99,7 @@ typedef struct master_data
 
         if (findSlave(from) == -1 && type != MSG_ROOT_ID_REQ)
         {
+            Serial.printf("slave not identified, sending reset");
             sendSlaveReset(from);
             return;
         }
@@ -123,8 +125,21 @@ typedef struct master_data
         }
     }
 
+    void killSlave(uint32_t i)
+    {
+        freeslots[i] = true;
+        slaves[i].is_ready = false;
+    }
+
     void sendSlaveReset(uint32_t dest)
     {
+
+        int32_t i = findSlave(dest);
+        if (i != -1)
+        {
+            slaves[i].is_ready = false;
+        }
+
         StaticJsonDocument<STATIC_JSON_DOC_SIZE> msg;
 
         msg["id"] = mesh->getNodeId();
@@ -287,6 +302,8 @@ typedef struct master_data
 
             slaves[s].n_sensors++;
         }
+
+        slaves[s].is_ready = true;
         Serial.printf("SLAVE KEEPALIVE: %u", slaves[s].keepalive_period);
     }
 
