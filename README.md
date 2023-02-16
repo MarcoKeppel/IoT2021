@@ -17,6 +17,7 @@ It aims to be a very low cost solution, only requiring inexpensive microcontroll
 * [General Information](#general-information)
 * [Requirements](#requirements)
     * [Dependencies](#dependencies)
+* [Resources](#resources)
 
 ## General Information
 
@@ -41,3 +42,7 @@ As for the software, this project is built using the Arduino core for ESP8266 (l
     - [ESPAsyncTCP](https://github.com/me-no-dev/ESPAsyncTCP)
 
     ```TODO```: write versions of the libraries (and possible incompatibilities)
+
+## Resources
+
+- Project video: [youtube.com]()/```TODO```
