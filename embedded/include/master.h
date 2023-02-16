@@ -293,7 +293,7 @@ typedef struct master_data
 
             sensor_t *sensor = &(slaves[s].sensors[slaves[s].n_sensors]);
 
-            // TODO: sensor->name
+            strcpy(sensor->name, (const char *)sen["name"]);
             sensor->type = sen["type"];
             sensor->val_type = sen["val_type"];
             sensor->update_rate = sen["update_rate"];

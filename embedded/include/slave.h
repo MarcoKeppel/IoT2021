@@ -182,6 +182,7 @@ typedef struct slave_data
 
             // Add data to message
             JsonObject sensorObject = sensorsArray.createNestedObject();
+            sensorObject["name"] = sensors[i].name;
             sensorObject["type"] = sensors[i].type;
             sensorObject["val_type"] = sensors[i].val_type;
             sensorObject["update_rate"] = sensors[i].update_rate;
