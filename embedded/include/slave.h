@@ -158,6 +158,7 @@ typedef struct slave_data
 
         msg["id"] = mesh->getNodeId();
         msg["type"] = MSG_ROOT_ID_REQ;
+        msg["name"] = this->name;
 
         char msgSerialized[SERIALIZED_JSON_MSG_SIZE];
         serializeJson(msg, msgSerialized);

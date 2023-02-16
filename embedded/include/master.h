@@ -106,7 +106,7 @@ typedef struct master_data
         {
 
         case MSG_ROOT_ID_REQ: // TODO check if new slaves can be added, return error if not (protocol to be defined)
-            addSlave(from);
+            addSlave(from, msg);
             sendMasterAddrResp(from);
             break;
 
@@ -215,7 +215,7 @@ typedef struct master_data
         mesh->sendSingle(dest, msgSerialized);
     }
 
-    void addSlave(uint32_t addr)
+    void addSlave(uint32_t addr, const JsonDocument &msg)
     {
         int32_t s = findSlave(addr, false);
 
@@ -239,6 +239,7 @@ typedef struct master_data
                 int8_t freeslot = getFirstFreeSlot();
                 this->freeslots[freeslot] = false;
                 slaves[freeslot].addr = addr;
+                strcpy(slaves[freeslot].name, (const char *)msg["sensors"]);
 
                 // TODO slave should send other parameters such as name, either here (master req) or in the sensor adv message
 
