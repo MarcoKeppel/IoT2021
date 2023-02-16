@@ -33,7 +33,7 @@ typedef node_role node_role_t;
 typedef struct
 {
 
-    const char *name; // Human readable name
+    char name[SENSOR_NAME_LEN]; // Human readable name
     sensor_type_t type;
     sensor_val_type_t val_type;
     uint8_t update_rate;
@@ -47,7 +47,7 @@ typedef struct
 {
 
     uint32_t addr;
-    char *name;
+    char name[SLAVE_NAME_LEN];
     sensor_t sensors[M_MAX_SLAVE_SENSORS_N];
     uint8_t n_sensors = 0;
     int32_t keepalive_period = -1;

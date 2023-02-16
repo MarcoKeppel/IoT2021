@@ -16,12 +16,11 @@
 #include <painlessMesh.h>
 #include <ArduinoJson.h>
 
-// TODO: even after sensor advertisement reply is sent, sensor data should not be read as it will not be valid (either 0 or old data from another slave)
 
 typedef struct master_data
 {
 
-    char *name;
+    char name[MASTER_NAME_LEN];
     slave_t slaves[M_MAX_SLAVES_N];
     bool freeslots[M_MAX_SLAVES_N];
 
@@ -71,7 +70,6 @@ typedef struct master_data
                         {
                             Serial.printf("UCCIDI LO SLAVE %u \n\r", i);
                             killSlave(i);
-                            // TODO: remove the slave
                         }
                         sendKeepalive(slaves[i].addr);
                     }

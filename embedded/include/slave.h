@@ -18,7 +18,7 @@
 typedef struct slave_data
 {
 
-    const char *name;
+    char name[SLAVE_NAME_LEN];
     uint32_t masterAddr;
     sensor_t sensors[M_MAX_SLAVE_SENSORS_N]; // Static size array instead? With size defined by MAX_SLAVE_SENSORS_N macro
     int16_t sensors_update_rate[M_MAX_SLAVE_SENSORS_N] = {0};
@@ -68,6 +68,9 @@ typedef struct slave_data
             {
                 lastBroadcastMillis = currentMillis;
                 sendMasterAddrReq();
+
+                // TODO REMOVE ME
+                printSensors();
             }
             break;
 
@@ -271,7 +274,7 @@ typedef struct slave_data
         deserializeJson(configJson, f.readString());
 
         Serial.println((const char *)configJson["name"]);
-        this->name = (const char *)configJson["name"];
+        strcpy(this->name, (const char *)configJson["name"]);
 
         initSensors(configJson);
 
@@ -292,7 +295,7 @@ typedef struct slave_data
             // TODO: this should really be its own function
 
             // Serial.printf("initSensors(): '%s'\n", (const char*) s["name"]);
-            sensors[sensors_n].name = (const char *)s["name"];
+            strcpy(sensors[sensors_n].name, (const char *)s["name"]);
             sensors[sensors_n].type = (sensor_type_t)s["type"];
             sensors[sensors_n].val_type = (sensor_val_type_t)s["val_type"];
             sensors[sensors_n].update_rate = (uint8_t)s["update_rate"];

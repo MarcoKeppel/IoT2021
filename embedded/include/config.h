@@ -23,6 +23,10 @@
 #define M_MAX_SLAVES_N 8
 #define M_MAX_SLAVE_SENSORS_N 8
 
+#define SLAVE_NAME_LEN  24
+#define MASTER_NAME_LEN SLAVE_NAME_LEN
+#define SENSOR_NAME_LEN 24
+
 // Default node role used when "role" is not specified in the node config file
 #define NODE_DEFAULT_ROLE slave
 
