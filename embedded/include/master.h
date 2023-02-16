@@ -30,6 +30,8 @@ typedef struct master_data
     uint32_t lastKeepaliveMillis = 0;
     painlessMesh *mesh;
 
+    char msg_str[100];
+    char state_str[100];
     master_data(painlessMesh *mesh)
     {
 
@@ -89,8 +91,9 @@ typedef struct master_data
     {
 
         uint8_t type = (uint8_t)msg["type"];
-
-        Serial.printf("Message:\n\tfrom: %u\n\ttype: %u\n", from, type);
+        msgType(msg_str, type);
+        Serial.printf("msgtype: %s, from %u\n\r", msg_str, from);
+        // Serial.printf("Message:\n\tfrom: %u\n\ttype: %u\n", from, type);
 
         switch (type)
         {
