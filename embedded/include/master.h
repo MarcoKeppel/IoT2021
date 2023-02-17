@@ -68,7 +68,7 @@ typedef struct master_data
                         slaves[i].kill_countdown--;
                         if (slaves[i].kill_countdown <= 0)
                         {
-                            Serial.printf("UCCIDI LO SLAVE %u \n\r", i);
+                            // / Serial.printf("UCCIDI LO SLAVE %u \n\r", i);
                             killSlave(i);
                         }
                         sendKeepalive(slaves[i].addr);
@@ -80,7 +80,7 @@ typedef struct master_data
                 }
                 else
                 {
-                    Serial.printf("slave %u is not ready yet \n\r", i);
+                    // / Serial.printf("slave %u is not ready yet \n\r", i);
                 }
 
                 // Serial.printf("kc: %d kill_in: %d\n\r", slaves[i].keepalive_counter, slaves[i].kill_countdown);
@@ -96,11 +96,12 @@ typedef struct master_data
         
         uint8_t type = (uint8_t)msg["type"];
         msgType(msg_str, type);
-        Serial.printf("msgtype: %s, from %u\n\r", msg_str, from);
+        // / Serial.printf("msgtype: %s, from %u\n\r", msg_str, from);
+        Serial.printf("{\"from\":%u,\"msg\":%s}\n", from, msg_serialized.c_str());
 
         if (findSlave(from) == -1 && type != MSG_ROOT_ID_REQ)
         {
-            Serial.printf("slave not identified, sending reset");
+            // / Serial.printf("slave not identified, sending reset");
             sendSlaveReset(from);
             return;
         }
@@ -130,6 +131,8 @@ typedef struct master_data
     {
         freeslots[i] = true;
         slaves[i].is_ready = false;
+
+        Serial.printf("KILLED SLAVE %u\n", slaves[i].addr);
     }
 
     void sendSlaveReset(uint32_t dest)
@@ -149,6 +152,8 @@ typedef struct master_data
         char msgSerialized[SERIALIZED_JSON_MSG_SIZE];
         serializeJson(msg, msgSerialized);
         mesh->sendSingle(dest, msgSerialized);
+
+        Serial.printf("RESET SLAVE %u\n", dest);
     }
 
     void slaveIsAlive(uint32_t addr)
@@ -160,7 +165,7 @@ typedef struct master_data
             slaves[s].keepalive_counter = slaves[s].keepalive_period;
         }
 
-        Serial.printf("slave %u with address %u saved\n\r", s, addr);
+        //Serial.printf("slave %u with address %u saved\n\r", s, addr);
     }
 
     void sendMasterAddrResp(uint32_t dest)
@@ -226,7 +231,7 @@ typedef struct master_data
         if (s >= 0)
         {
 
-            Serial.printf("Found slave at index %d\n", s);
+            // / Serial.printf("Found slave at index %d\n", s);
 
             freeslots[s] = false;
         }
@@ -234,7 +239,7 @@ typedef struct master_data
         else
         {
 
-            Serial.printf("Slave not found\n");
+            // / Serial.printf("Slave not found\n");
 
             uint8_t n_slaves = getNSlaves();
             if (n_slaves < M_MAX_SLAVES_N)
@@ -244,7 +249,7 @@ typedef struct master_data
                 slaves[freeslot].addr = addr;
                 strcpy(slaves[freeslot].name, (const char *)msg["name"]);
 
-                Serial.printf("New slave added to list: \n\taddr: %u\n#slaves: %u\n", addr, n_slaves + 1);
+                // / Serial.printf("New slave added to list: \n\taddr: %u\n#slaves: %u\n", addr, n_slaves + 1);
             }
         }
     }
@@ -304,7 +309,7 @@ typedef struct master_data
         }
 
         slaves[s].is_ready = true;
-        Serial.printf("SLAVE KEEPALIVE: %u", slaves[s].keepalive_period);
+        // / Serial.printf("SLAVE KEEPALIVE: %u", slaves[s].keepalive_period);
     }
 
     void updateSensorValues(uint32_t addr, const JsonDocument &msg)
