@@ -114,11 +114,8 @@ void initMesh()
 void onReceive(uint32_t from, const String &msg)
 {
 
-  Serial.printf("Received from %u msg:\n%s\n", from, msg.c_str());
-  Serial.println();
-
-  StaticJsonDocument<512> msgJson;
-  deserializeJson(msgJson, msg);
+  //Serial.printf("Received from %u msg:\n%s\n", from, msg.c_str());
+  //Serial.println();
 
 #ifdef __FORCE_MASTER__
   masterD.onReceive(from, msgJson);
@@ -128,16 +125,16 @@ void onReceive(uint32_t from, const String &msg)
   {
 
   case master:
-    masterD.onReceive(from, msgJson);
+    masterD.onReceive(from, msg);
     break;
 
   case slave:
-    slaveD.onReceive(from, msgJson);
+    slaveD.onReceive(from, msg);
     break;
 
   case master_slave:
-    masterD.onReceive(from, msgJson);
-    slaveD.onReceive(from, msgJson);
+    masterD.onReceive(from, msg);
+    slaveD.onReceive(from, msg);
   }
 
 #endif

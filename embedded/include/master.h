@@ -88,9 +88,12 @@ typedef struct master_data
         }
     }
 
-    void onReceive(uint32_t from, const JsonDocument &msg)
+    void onReceive(uint32_t from, const String &msg_serialized)
     {
 
+        StaticJsonDocument<512> msg;
+        deserializeJson(msg, msg_serialized);
+        
         uint8_t type = (uint8_t)msg["type"];
         msgType(msg_str, type);
         Serial.printf("msgtype: %s, from %u\n\r", msg_str, from);
@@ -239,9 +242,7 @@ typedef struct master_data
                 int8_t freeslot = getFirstFreeSlot();
                 this->freeslots[freeslot] = false;
                 slaves[freeslot].addr = addr;
-                strcpy(slaves[freeslot].name, (const char *)msg["sensors"]);
-
-                // TODO slave should send other parameters such as name, either here (master req) or in the sensor adv message
+                strcpy(slaves[freeslot].name, (const char *)msg["name"]);
 
                 Serial.printf("New slave added to list: \n\taddr: %u\n#slaves: %u\n", addr, n_slaves + 1);
             }
