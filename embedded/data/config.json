@@ -12,10 +12,10 @@
         },
         {
             "name": "sensor_name_0-1",
-            "type": 2,
-            "val_type": 0,
+            "type": 0,
+            "val_type": 1,
             "update_rate": 15,
-            "pin": 2,
+            "pin": 17,
             "timeout_period": 50
         }
     ]

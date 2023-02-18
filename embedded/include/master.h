@@ -323,7 +323,23 @@ typedef struct master_data
         JsonArrayConst sensors = msg["sensors"].as<JsonArrayConst>();
         for (JsonObjectConst sensor : sensors)
         {
-            slaves[s].sensors[(uint32_t)sensor["index"]].val = (uint32_t)sensor["val"]; // TODO: should be more generic than int
+            uint32_t ind = (uint32_t)sensor["index"];
+            switch (slaves[s].sensors[ind].val_type) {
+
+                    case v_int:
+                        slaves[s].sensors[ind].val.i = (int32_t)sensor["val"];
+                        break;
+                    
+                    case v_uint:
+                        slaves[s].sensors[ind].val.u = (uint32_t)sensor["val"];
+                        break;
+
+                    case v_real:
+                        slaves[s].sensors[ind].val.f = (float_t)sensor["val"];
+
+                    case v_bool:
+                        slaves[s].sensors[ind].val.b = (bool)sensor["val"];
+                }
         }
     }
 

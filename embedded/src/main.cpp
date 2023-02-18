@@ -7,8 +7,11 @@
 #include "slave.h"
 #include "master.h"
 
-// Pin mapping 'pins_arduino.h'
+// Pin mapping 'pins_arduino.h' for ESP8266-based nodemcuv2 board
 /*
+  #define PIN_A0 (17)
+  static const uint8_t A0 = PIN_A0;
+
   static const uint8_t D0   = 16;
   static const uint8_t D1   = 5;
   static const uint8_t D2   = 4;

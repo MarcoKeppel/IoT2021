@@ -229,14 +229,29 @@ typedef struct slave_data
 
                 // Read sensor value, method should depend on val_type
                 // For now assume it's always digitalRead()
-                sensors[i].val = digitalRead(sensors[i].pin);
+                sensors[i].read();
 
                 // Serial.printf("sensors[%d].val: %d\n", i, sensors[i].val);
 
                 // Add data to message
                 JsonObject sensorObject = sensorsArray.createNestedObject();
                 sensorObject["index"] = i;
-                sensorObject["val"] = sensors[i].val;
+                switch (sensors[i].val_type) {
+
+                    case v_int:
+                        sensorObject["val"] = sensors[i].getValue<int32_t>();
+                        break;
+                    
+                    case v_uint:
+                        sensorObject["val"] = sensors[i].getValue<uint32_t>();
+                        break;
+
+                    case v_real:
+                        sensorObject["val"] = sensors[i].getValue<float_t>();
+
+                    case v_bool:
+                        sensorObject["val"] = sensors[i].getValue<bool>();
+                }
             }
         }
 
@@ -333,6 +348,7 @@ typedef struct slave_data
                 sensors[i].pin);
         }
     }
+
 } slave_data_t;
 
 #endif
