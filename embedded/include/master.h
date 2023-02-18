@@ -68,7 +68,7 @@ typedef struct master_data
                         slaves[i].kill_countdown--;
                         if (slaves[i].kill_countdown <= 0)
                         {
-                            Serial.printf("UCCIDI LO SLAVE %u \n\r", i);
+                            // / Serial.printf("UCCIDI LO SLAVE %u \n\r", i);
                             killSlave(i);
                         }
                         sendKeepalive(slaves[i].addr);
@@ -80,7 +80,7 @@ typedef struct master_data
                 }
                 else
                 {
-                    Serial.printf("slave %u is not ready yet \n\r", i);
+                    // / Serial.printf("slave %u is not ready yet \n\r", i);
                 }
 
                 // Serial.printf("kc: %d kill_in: %d\n\r", slaves[i].keepalive_counter, slaves[i].kill_countdown);
@@ -88,16 +88,20 @@ typedef struct master_data
         }
     }
 
-    void onReceive(uint32_t from, const JsonDocument &msg)
+    void onReceive(uint32_t from, const String &msg_serialized)
     {
 
+        StaticJsonDocument<512> msg;
+        deserializeJson(msg, msg_serialized);
+        
         uint8_t type = (uint8_t)msg["type"];
         msgType(msg_str, type);
-        Serial.printf("msgtype: %s, from %u\n\r", msg_str, from);
+        // / Serial.printf("msgtype: %s, from %u\n\r", msg_str, from);
+        Serial.printf("{\"from\":%u,\"msg\":%s}\n", from, msg_serialized.c_str());
 
         if (findSlave(from) == -1 && type != MSG_ROOT_ID_REQ)
         {
-            Serial.printf("slave not identified, sending reset");
+            // / Serial.printf("slave not identified, sending reset");
             sendSlaveReset(from);
             return;
         }
@@ -127,6 +131,8 @@ typedef struct master_data
     {
         freeslots[i] = true;
         slaves[i].is_ready = false;
+
+        Serial.printf("KILLED SLAVE %u\n", slaves[i].addr);
     }
 
     void sendSlaveReset(uint32_t dest)
@@ -146,6 +152,8 @@ typedef struct master_data
         char msgSerialized[SERIALIZED_JSON_MSG_SIZE];
         serializeJson(msg, msgSerialized);
         mesh->sendSingle(dest, msgSerialized);
+
+        Serial.printf("RESET SLAVE %u\n", dest);
     }
 
     void slaveIsAlive(uint32_t addr)
@@ -157,7 +165,7 @@ typedef struct master_data
             slaves[s].keepalive_counter = slaves[s].keepalive_period;
         }
 
-        Serial.printf("slave %u with address %u saved\n\r", s, addr);
+        //Serial.printf("slave %u with address %u saved\n\r", s, addr);
     }
 
     void sendMasterAddrResp(uint32_t dest)
@@ -223,7 +231,7 @@ typedef struct master_data
         if (s >= 0)
         {
 
-            Serial.printf("Found slave at index %d\n", s);
+            // / Serial.printf("Found slave at index %d\n", s);
 
             freeslots[s] = false;
         }
@@ -231,7 +239,7 @@ typedef struct master_data
         else
         {
 
-            Serial.printf("Slave not found\n");
+            // / Serial.printf("Slave not found\n");
 
             uint8_t n_slaves = getNSlaves();
             if (n_slaves < M_MAX_SLAVES_N)
@@ -239,11 +247,9 @@ typedef struct master_data
                 int8_t freeslot = getFirstFreeSlot();
                 this->freeslots[freeslot] = false;
                 slaves[freeslot].addr = addr;
-                strcpy(slaves[freeslot].name, (const char *)msg["sensors"]);
+                strcpy(slaves[freeslot].name, (const char *)msg["name"]);
 
-                // TODO slave should send other parameters such as name, either here (master req) or in the sensor adv message
-
-                Serial.printf("New slave added to list: \n\taddr: %u\n#slaves: %u\n", addr, n_slaves + 1);
+                // / Serial.printf("New slave added to list: \n\taddr: %u\n#slaves: %u\n", addr, n_slaves + 1);
             }
         }
     }
@@ -303,7 +309,7 @@ typedef struct master_data
         }
 
         slaves[s].is_ready = true;
-        Serial.printf("SLAVE KEEPALIVE: %u", slaves[s].keepalive_period);
+        // / Serial.printf("SLAVE KEEPALIVE: %u", slaves[s].keepalive_period);
     }
 
     void updateSensorValues(uint32_t addr, const JsonDocument &msg)
@@ -317,7 +323,23 @@ typedef struct master_data
         JsonArrayConst sensors = msg["sensors"].as<JsonArrayConst>();
         for (JsonObjectConst sensor : sensors)
         {
-            slaves[s].sensors[(uint32_t)sensor["index"]].val = (uint32_t)sensor["val"]; // TODO: should be more generic than int
+            uint32_t ind = (uint32_t)sensor["index"];
+            switch (slaves[s].sensors[ind].val_type) {
+
+                    case v_int:
+                        slaves[s].sensors[ind].val.i = (int32_t)sensor["val"];
+                        break;
+                    
+                    case v_uint:
+                        slaves[s].sensors[ind].val.u = (uint32_t)sensor["val"];
+                        break;
+
+                    case v_real:
+                        slaves[s].sensors[ind].val.f = (float_t)sensor["val"];
+
+                    case v_bool:
+                        slaves[s].sensors[ind].val.b = (bool)sensor["val"];
+                }
         }
     }
 

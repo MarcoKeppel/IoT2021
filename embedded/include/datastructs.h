@@ -38,8 +38,77 @@ typedef struct
     sensor_val_type_t val_type;
     uint8_t update_rate;
     // unsigned char val[4];       // float* f = (float*) &val;
-    int32_t val; // Should be more generic than int, but for now this will work ok
+    union {
+        int32_t i;
+        uint32_t u;
+        float_t f;
+        bool b;
+    } val;
     uint8_t pin;
+
+    void read() {
+
+        switch (val_type) {
+
+            case v_int:
+                val.i = read<int32_t>();
+                break;
+            
+            case v_uint:
+                val.u = read<uint32_t>();
+                break;
+
+            case v_real:
+                val.f = read<float_t>();
+
+            case v_bool:
+                val.b = read<bool>();
+        }
+    }
+
+    template<class T>
+    T read() {
+        
+        switch (type) {
+            
+            case analog:
+                return analogRead(pin);
+                break;
+            
+            case digital:
+                return digitalRead(pin);
+                break;
+
+            case i2c:
+                // TODO: to be implemented
+                break;
+        }
+
+        return 0;
+    }
+
+    template<class T>
+    T getValue () {
+
+        switch (val_type) {
+
+            case v_int:
+                return val.i;
+                break;
+            
+            case v_uint:
+                return val.u;
+                break;
+
+            case v_real:
+                return val.f;
+
+            case v_bool:
+                return val.b;
+        }
+
+        return 0;
+    }
 
 } sensor_t;
 
