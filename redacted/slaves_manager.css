@@ -1,0 +1,36 @@
+Screen {
+    background: $surface-darken-1;
+}
+
+ListButtons > Button {
+    width: 100%;
+}
+ListButtons {
+    dock: left;
+    overflow-y: scroll;
+    width: 20;
+}
+
+#tree-view {
+    display: none; 
+    scrollbar-gutter: stable;
+    overflow: auto;    
+    width: auto;    
+    height: 100%;            
+    dock: left;       
+}
+
+CodeBrowser.-show-tree #tree-view {
+    display: block;        
+    max-width: 50%;
+}
+
+
+#code-view {
+    overflow: auto scroll;  
+    min-width: 100%;        
+}
+#code {
+    width: auto;    
+}
+
