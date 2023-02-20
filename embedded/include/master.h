@@ -350,7 +350,7 @@ typedef struct master_data
         {
             if (freeslots[i]) continue;
 
-            StaticJsonDocument<STATIC_JSON_DOC_SIZE> top_msg;
+            StaticJsonDocument<STATIC_JSON_DOC_SIZE*2> top_msg;
             
             top_msg["from"] = slaves[i].addr;
 
@@ -360,7 +360,7 @@ typedef struct master_data
             msg["type"] = MSG_ROOT_ID_REQ;
             msg["name"] = this->name;
 
-            char msgSerialized[SERIALIZED_JSON_MSG_SIZE];
+            char msgSerialized[SERIALIZED_JSON_MSG_SIZE*2];
             serializeJson(top_msg, msgSerialized);
 
             Serial.println(msgSerialized);
@@ -372,8 +372,8 @@ typedef struct master_data
         {
             if (freeslots[i]) continue;
 
-            char msgSerialized[SERIALIZED_JSON_MSG_SIZE];
-            StaticJsonDocument<STATIC_JSON_DOC_SIZE> top_msg;
+            char msgSerialized[SERIALIZED_JSON_MSG_SIZE*2];
+            StaticJsonDocument<STATIC_JSON_DOC_SIZE*2> top_msg;
             
             top_msg["from"] = slaves[i].addr;
 
