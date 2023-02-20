@@ -45,3 +45,9 @@ CodeBrowser.-show-tree #tree-view {
     width: auto;    
 }
 
+#msg-lbl {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
