@@ -385,15 +385,15 @@ typedef struct master_data
             JsonArray sensorsArray = msg.createNestedArray("sensors");
 
             // ...then cycle through all sensors and add those that need to be updated
-            for (int i = 0; i < slaves[i].n_sensors; i++)
+            for (int j = 0; j < slaves[i].n_sensors; j++)
             {
 
                 // Add data to message
                 JsonObject sensorObject = sensorsArray.createNestedObject();
-                sensorObject["name"] = slaves[i].sensors[i].name;
-                sensorObject["type"] = slaves[i].sensors[i].type;
-                sensorObject["val_type"] = slaves[i].sensors[i].val_type;
-                sensorObject["update_rate"] = slaves[i].sensors[i].update_rate;
+                sensorObject["name"] = slaves[i].sensors[j].name;
+                sensorObject["type"] = slaves[i].sensors[j].type;
+                sensorObject["val_type"] = slaves[i].sensors[j].val_type;
+                sensorObject["update_rate"] = slaves[i].sensors[j].update_rate;
             }
 
             serializeJson(top_msg, msgSerialized);
