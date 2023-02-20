@@ -16,7 +16,7 @@ from datastructs import *
 class ListButtons(Widget):
     def compose(self) -> ComposeResult:
         for i in range(4):
-            yield Button("AAC"+str(i), id="Aac"+str(i), variant="primary")
+            yield Button("AAC"+str(i), id="Aac"+str(i))
 
 class SlavesManager(App):
     """Textual code browser app."""
@@ -45,11 +45,18 @@ class SlavesManager(App):
         path = "./" if len(sys.argv) < 2 else sys.argv[1]
         yield Header()
         
-        yield ListButtons()
+        #yield ListButtons()
+
+        yield Vertical(
+            #Button("slave ---"),
+            #Button("slave ---"),
+            #Button("slave ---"),
+            id="list-buttons"
+        )
         
         yield Vertical(
             self.msg_label,
-            Button("ASC", id="asc", variant="primary"),
+            Button("ASC", id="asc"),
             id="code-view")
         yield Footer()
 
@@ -104,6 +111,7 @@ class SlavesManager(App):
         elif slave_msg["type"] == 2:
             if msg["from"] in self.slaves:
                 self.slaves[msg["from"]].set_sensors(slave_msg["sensors"])
+                self.add_slave(msg["from"], slave_msg)
                 print("\n\n\n\n\n\n\n\n")
                 for s in self.slaves:
                     print(s)
@@ -123,4 +131,9 @@ class SlavesManager(App):
                 #         s += '\t\tvalue {}\n'.format(i.val)
                 #     print(s.strip())
 
-    
+    def add_slave(self, addr, s):
+        self.change_label_test(addr)
+        self.query_one("list-buttons").mount(
+            Button("Slave " + str(addr), id="btn_" + str(addr))
+        )
+        self.query_one("list-buttons").styles.background = "red"

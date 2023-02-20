@@ -11,6 +11,17 @@ ListButtons {
     width: 20;
 }
 
+#list-buttons {
+
+    dock: left;
+    overflow-y: scroll;
+    width: 20;
+}
+
+#list-buttons > Button {
+    width: 100%;
+}
+
 #tree-view {
     display: none; 
     scrollbar-gutter: stable;
