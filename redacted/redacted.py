@@ -24,7 +24,7 @@ def serial_thread(app):
 
     serial = pyserial.Serial(serial_port, serial_speed)
 
-    serial.write('rst\n'.encode())
+    serial.write('upd\n'.encode())
 
     slaves = { }
 
