@@ -46,6 +46,7 @@ void setup()
 {
 
   Serial.begin(115200);
+  Serial.setTimeout(100);
   Serial.println("\n----------------"); // Clear serial garbage
 
   initMesh();
@@ -102,6 +103,22 @@ void loop()
   }
 
 #endif
+
+  // TODO: better implementation for received messages
+  if (Serial.available()) {
+
+    String msg = Serial.readStringUntil('\n');
+    msg.trim();
+
+    if (role == master || role == master_slave) {
+      
+      if (msg == "upd") {
+
+        masterD.sendSerialRecap();
+      }
+    }
+
+  }
 
   // Run mesh update
   mesh.update();

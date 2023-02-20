@@ -57,8 +57,9 @@ typedef struct master_data
         if (currentMillis >= lastKeepaliveMillis + KEEPALIVE_PERIOD)
         {
             lastKeepaliveMillis = currentMillis;
-            for (int i = 0; i < M_MAX_SLAVES_N && !freeslots[i]; i++)
+            for (int i = 0; i < M_MAX_SLAVES_N; i++)
             {
+                if (freeslots[i]) continue;
 
                 if (slaves[i].keepalive_period != -1)
                 {
@@ -340,6 +341,66 @@ typedef struct master_data
                     case v_bool:
                         slaves[s].sensors[ind].val.b = (bool)sensor["val"];
                 }
+        }
+    }
+
+    void sendSerialRecap() {
+
+        for (int i = 0; i < M_MAX_SLAVES_N; i++)
+        {
+            if (freeslots[i]) continue;
+
+            StaticJsonDocument<STATIC_JSON_DOC_SIZE> top_msg;
+            
+            top_msg["from"] = slaves[i].addr;
+
+            JsonObject msg = top_msg.createNestedObject("msg");
+
+            msg["id"] = slaves[i].addr;
+            msg["type"] = MSG_ROOT_ID_REQ;
+            msg["name"] = this->name;
+
+            char msgSerialized[SERIALIZED_JSON_MSG_SIZE];
+            serializeJson(top_msg, msgSerialized);
+
+            Serial.println(msgSerialized);
+
+            yield();
+        }
+
+        for (int i = 0; i < M_MAX_SLAVES_N; i++)
+        {
+            if (freeslots[i]) continue;
+
+            char msgSerialized[SERIALIZED_JSON_MSG_SIZE];
+            StaticJsonDocument<STATIC_JSON_DOC_SIZE> top_msg;
+            
+            top_msg["from"] = slaves[i].addr;
+
+            JsonObject msg = top_msg.createNestedObject("msg");
+
+            msg["type"] = MSG_SENSOR_LIST_ADV;
+            msg["min_update_rate"] = 10;    // TODO
+
+            JsonArray sensorsArray = msg.createNestedArray("sensors");
+
+            // ...then cycle through all sensors and add those that need to be updated
+            for (int i = 0; i < slaves[i].n_sensors; i++)
+            {
+
+                // Add data to message
+                JsonObject sensorObject = sensorsArray.createNestedObject();
+                sensorObject["name"] = slaves[i].sensors[i].name;
+                sensorObject["type"] = slaves[i].sensors[i].type;
+                sensorObject["val_type"] = slaves[i].sensors[i].val_type;
+                sensorObject["update_rate"] = slaves[i].sensors[i].update_rate;
+            }
+
+            serializeJson(top_msg, msgSerialized);
+
+            Serial.println(msgSerialized);
+
+            yield();
         }
     }
 
