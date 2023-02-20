@@ -26,6 +26,12 @@ def serial_thread():
 
     print("SERIAL STARTING")
 
+    # serial = pyserial.Serial()
+    # serial.port = serial_port
+    # serial.baudrate = serial_speed
+    # # serial.timeout = 1
+    # serial.setDTR(False)
+    # serial.open()
     serial = pyserial.Serial(serial_port, serial_speed)
 
     time.sleep(1)
@@ -54,7 +60,7 @@ def serial_thread():
         # slave_msg = msg["msg"]
         #print(msg)
         app.send_msg(msg)
-        print(msg)
+        #print(msg)
         
         # if slave_msg["type"] == 0:
         #     slaves[msg["from"]] = Slave(msg["from"], slave_msg["name"])
@@ -89,6 +95,5 @@ if __name__ == "__main__":
     ts = threading.Thread(target=serial_thread, args=[ ])
     ts.start()
     app.run()
-
     event.set()
     ts.join()

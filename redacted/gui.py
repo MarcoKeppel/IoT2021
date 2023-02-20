@@ -33,8 +33,8 @@ class SlavesManager(App):
     show_tree = var(True)
 
     slaves = { }
-
     slaves_btn = []
+    slave_active = -1
 
     def watch_show_tree(self, show_tree: bool) -> None:
         """Called when show_tree is modified."""
@@ -98,6 +98,7 @@ class SlavesManager(App):
             self.change_label_test(str(index) + ">" + str(len(self.slaves_btn)))
             return
         
+        self.slave_active = index
         slave = self.slaves[self.slaves_btn[index]]
         s = ''
         s += 'name: {}\n'.format(slave.name)
@@ -108,10 +109,6 @@ class SlavesManager(App):
         #print(s.strip())
 
         self.change_label_test(s)
-
-    def action_toggle_files(self) -> None:
-        """Called in response to key binding."""
-        self.show_tree = not self.show_tree
 
     def change_label_test(self, msg):
         self.msg_label.update(renderable=str(msg))
@@ -132,15 +129,27 @@ class SlavesManager(App):
             if msg["from"] in self.slaves:
                 self.slaves[msg["from"]].set_sensors(slave_msg["sensors"])
                 self.add_slave(msg["from"], slave_msg)
-                print("\n\n\n\n\n\n\n\n")
-                for s in self.slaves:
-                    print(s)
+                # print("\n\n\n\n\n\n\n\n")
+                # for s in self.slaves:
+                #     print(s)
         
         elif slave_msg["type"] == 9:
             if msg["from"] in self.slaves:
                 for s in slave_msg["sensors"]:
                     self.slaves[msg["from"]].sensors[s["index"]].val = s["val"]
-                print("\n\n\n\n\n\n\n\n")
+                # print("\n\n\n\n\n\n\n\n")
+
+                if self.slave_active >= 0 and self.slave_active < len(self.slaves_btn):
+                    if msg["from"] == self.slaves_btn[self.slave_active]:
+                        slave = self.slaves[self.slaves_btn[self.slave_active]]
+                        s = ''
+                        s += 'name: {}\n'.format(slave.name)
+                        s += '\tsensors:\n'
+                        for i in slave.sensors:
+                            s += '\tname: {}\n'.format(i.name)
+                            s += '\t\tvalue {}\n'.format(i.val)
+                        self.change_label_test(s)
+                    
                 # for k in slaves:
                 #     slave = slaves[k]
                 #     s = ''
