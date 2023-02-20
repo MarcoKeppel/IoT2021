@@ -45,6 +45,8 @@ node_role_t role;
 void setup()
 {
 
+  pinMode(LED_BUILTIN, OUTPUT);
+
   Serial.begin(115200);
   Serial.setTimeout(100);
   Serial.println("\n----------------"); // Clear serial garbage
@@ -115,6 +117,7 @@ void loop()
       if (msg == "upd") {
 
         masterD.sendSerialRecap();
+        //ESP.restart();
       }
     }
 

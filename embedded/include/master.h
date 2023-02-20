@@ -346,6 +346,8 @@ typedef struct master_data
 
     void sendSerialRecap() {
 
+        digitalWrite(LED_BUILTIN, 1);
+
         for (int i = 0; i < M_MAX_SLAVES_N; i++)
         {
             if (freeslots[i]) continue;
