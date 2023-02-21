@@ -4,6 +4,8 @@ import serial as pyserial
 from serial.tools.list_ports import comports
 import json
 from rich.console import Console, Group
+from rich.layout import Layout
+from rich.prompt import Prompt
 from rich.table import Table
 from rich.panel import Panel
 from rich.columns import Columns
@@ -43,7 +45,7 @@ def gen_ui():
         height=terminal_height
     )
     #print(panel)
-    return panel
+    return Layout(panel)
 
 
 def gen_slaves():
@@ -54,7 +56,7 @@ def gen_slaves():
             title="Slaves",
             border_style="bright_black",
             title_align="left",
-            padding=(1, 1),
+            padding=(1, 2),
             expand=False
         )
         return panel
@@ -79,7 +81,7 @@ def gen_slaves():
             title="ID: " + str(k),
             border_style="gold1",
             title_align="center",
-            padding=(1, 2),
+            padding=(1, 1),
         )
         tables.append(p)
         tables.append(p)    # DELETEME
@@ -124,10 +126,11 @@ if __name__ == "__main__":
     t.add_column("Description")
     for port in comports():
         t.add_row(str(port.device), str(port.description))
+    l = Layout(t)
+    print(l)
 
-    print(t)
-
-    time.sleep(4)
+    serial_port = Prompt.ask("Enter the serial port (Name)")
+    serial_speed = int(Prompt.ask("Enter the serial port speed", choices=["9600", "35400", "115200"], default="115200"))
 
     print("Terminal height:")
     print(os.get_terminal_size().lines)
