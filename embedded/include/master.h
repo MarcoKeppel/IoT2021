@@ -134,6 +134,7 @@ typedef struct master_data
         slaves[i].is_ready = false;
 
         Serial.printf("KILLED SLAVE %u\n", slaves[i].addr);
+        Serial.printf("{\"from\":%u,\"msg\":{\"type\":\"KILLED\"}}\n", slaves[i].addr);
     }
 
     void sendSlaveReset(uint32_t dest)
