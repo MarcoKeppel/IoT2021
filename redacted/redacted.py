@@ -45,7 +45,8 @@ def gen_ui():
         height=terminal_height
     )
     #print(panel)
-    return Layout(panel)
+    #return Layout(panel)
+    return panel
 
 
 def gen_slaves():
@@ -71,20 +72,21 @@ def gen_slaves():
         t.add_column("Sensor")
         t.add_column("Value")
 
-        for s in v.sensors:
-            t.add_row(
-                s.name, str(s.val)
-            )
+        if v.sensors is not None:
+            for s in v.sensors:
+                t.add_row(
+                    s.name, str(s.val)
+                )
 
-        p = Panel.fit(
-            t,
-            title="ID: " + str(k),
-            border_style="gold1",
-            title_align="center",
-            padding=(1, 1),
-        )
-        tables.append(p)
-        tables.append(p)    # DELETEME
+            p = Panel.fit(
+                t,
+                title="ID: " + str(k),
+                border_style="gold1",
+                title_align="center",
+                padding=(1, 1),
+            )
+            tables.append(p)
+            tables.append(p)    # DELETEME
 
     panel = Panel(
         Columns(tables, expand=False),
@@ -126,7 +128,7 @@ if __name__ == "__main__":
     t.add_column("Description")
     for port in comports():
         t.add_row(str(port.device), str(port.description))
-    l = Layout(t)
+    l = t#Layout(t)
     print(l)
 
     serial_port = Prompt.ask("Enter the serial port (Name)")
@@ -141,6 +143,8 @@ if __name__ == "__main__":
 
     #print(gen_ui())
     live.start()
+    live.update(gen_ui())
+    live.refresh()
 
     serial = pyserial.Serial(serial_port, serial_speed)
 
@@ -169,6 +173,9 @@ if __name__ == "__main__":
             if msg["from"] in slaves:
                 for s in slave_msg["sensors"]:
                     slaves[msg["from"]].sensors[s["index"]].val = s["val"]
-            live.update(gen_ui())
-            live.refresh()
-            #print(gen_ui())
+        
+        elif slave_msg["type"] == "KILLED":
+            slaves.pop(msg["from"])
+                    
+        live.update(gen_ui())
+        live.refresh()

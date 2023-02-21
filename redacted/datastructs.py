@@ -5,7 +5,7 @@ class Sensor():
         # type?
         # val_type?
         # update_rate?
-        self.val = None
+        self.val = ""
         # pin?
 
 class Slave():
