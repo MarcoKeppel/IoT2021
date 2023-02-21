@@ -16,7 +16,6 @@
 #include <painlessMesh.h>
 #include <ArduinoJson.h>
 
-
 typedef struct master_data
 {
 
@@ -59,9 +58,10 @@ typedef struct master_data
             lastKeepaliveMillis = currentMillis;
             for (int i = 0; i < M_MAX_SLAVES_N; i++)
             {
-                if (freeslots[i]) continue;
+                if (freeslots[i])
+                    continue;
 
-                if (slaves[i].keepalive_period != -1)
+                if (slaves[i].keepalive_period != -1 && slaves[i].is_ready == true)
                 {
 
                     if (slaves[i].keepalive_counter <= 0)
@@ -94,10 +94,10 @@ typedef struct master_data
 
         StaticJsonDocument<512> msg;
         deserializeJson(msg, msg_serialized);
-        
+
         uint8_t type = (uint8_t)msg["type"];
         msgType(msg_str, type);
-        // / Serial.printf("msgtype: %s, from %u\n\r", msg_str, from);
+        // Serial.printf("msgtype: %s, from %u\n\r", msg_str, from);
         Serial.printf("{\"from\":%u,\"msg\":%s}\n", from, msg_serialized.c_str());
 
         if (findSlave(from) == -1 && type != MSG_ROOT_ID_REQ)
@@ -167,7 +167,7 @@ typedef struct master_data
             slaves[s].keepalive_counter = slaves[s].keepalive_period;
         }
 
-        //Serial.printf("slave %u with address %u saved\n\r", s, addr);
+        // Serial.printf("slave %u with address %u saved\n\r", s, addr);
     }
 
     void sendMasterAddrResp(uint32_t dest)
@@ -294,6 +294,7 @@ typedef struct master_data
         JsonArrayConst sensors = msg["sensors"].as<JsonArrayConst>();
         slaves[s].keepalive_period = msg["min_update_rate"];
         slaves[s].keepalive_counter = slaves[s].keepalive_period;
+        slaves[s].kill_countdown = KEEPALIVE_KILL_PERIODS;
         for (JsonObjectConst sen : sensors)
         {
 
@@ -326,35 +327,38 @@ typedef struct master_data
         for (JsonObjectConst sensor : sensors)
         {
             uint32_t ind = (uint32_t)sensor["index"];
-            switch (slaves[s].sensors[ind].val_type) {
+            switch (slaves[s].sensors[ind].val_type)
+            {
 
-                    case v_int:
-                        slaves[s].sensors[ind].val.i = (int32_t)sensor["val"];
-                        break;
-                    
-                    case v_uint:
-                        slaves[s].sensors[ind].val.u = (uint32_t)sensor["val"];
-                        break;
+            case v_int:
+                slaves[s].sensors[ind].val.i = (int32_t)sensor["val"];
+                break;
 
-                    case v_real:
-                        slaves[s].sensors[ind].val.f = (float_t)sensor["val"];
+            case v_uint:
+                slaves[s].sensors[ind].val.u = (uint32_t)sensor["val"];
+                break;
 
-                    case v_bool:
-                        slaves[s].sensors[ind].val.b = (bool)sensor["val"];
-                }
+            case v_real:
+                slaves[s].sensors[ind].val.f = (float_t)sensor["val"];
+
+            case v_bool:
+                slaves[s].sensors[ind].val.b = (bool)sensor["val"];
+            }
         }
     }
 
-    void sendSerialRecap() {
+    void sendSerialRecap()
+    {
 
         digitalWrite(LED_BUILTIN, 1);
 
         for (int i = 0; i < M_MAX_SLAVES_N; i++)
         {
-            if (freeslots[i]) continue;
+            if (freeslots[i])
+                continue;
 
-            StaticJsonDocument<STATIC_JSON_DOC_SIZE*2> top_msg;
-            
+            StaticJsonDocument<STATIC_JSON_DOC_SIZE * 2> top_msg;
+
             top_msg["from"] = slaves[i].addr;
 
             JsonObject msg = top_msg.createNestedObject("msg");
@@ -363,7 +367,7 @@ typedef struct master_data
             msg["type"] = MSG_ROOT_ID_REQ;
             msg["name"] = this->name;
 
-            char msgSerialized[SERIALIZED_JSON_MSG_SIZE*2];
+            char msgSerialized[SERIALIZED_JSON_MSG_SIZE * 2];
             serializeJson(top_msg, msgSerialized);
 
             Serial.println(msgSerialized);
@@ -373,17 +377,18 @@ typedef struct master_data
 
         for (int i = 0; i < M_MAX_SLAVES_N; i++)
         {
-            if (freeslots[i]) continue;
+            if (freeslots[i])
+                continue;
 
-            char msgSerialized[SERIALIZED_JSON_MSG_SIZE*2];
-            StaticJsonDocument<STATIC_JSON_DOC_SIZE*2> top_msg;
-            
+            char msgSerialized[SERIALIZED_JSON_MSG_SIZE * 2];
+            StaticJsonDocument<STATIC_JSON_DOC_SIZE * 2> top_msg;
+
             top_msg["from"] = slaves[i].addr;
 
             JsonObject msg = top_msg.createNestedObject("msg");
 
             msg["type"] = MSG_SENSOR_LIST_ADV;
-            msg["min_update_rate"] = 10;    // TODO
+            msg["min_update_rate"] = 10; // TODO
 
             JsonArray sensorsArray = msg.createNestedArray("sensors");
 
