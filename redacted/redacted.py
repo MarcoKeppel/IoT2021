@@ -41,7 +41,7 @@ def gen_ui():
         panel_group,
         title="[REDACTED]",
         border_style="red",
-        title_align="left",
+        title_align="center",
         padding=(1, 2),
         height=terminal_height
     )
@@ -51,17 +51,6 @@ def gen_ui():
 
 
 def gen_slaves():
-
-    if len(slaves) == 0:
-        panel = Panel(
-            "",
-            title="Slaves",
-            border_style="bright_black",
-            title_align="left",
-            padding=(1, 2),
-            expand=False
-        )
-        return panel
 
     tables = []
 
@@ -88,6 +77,10 @@ def gen_slaves():
             )
             tables.append(p)
             tables.append(p)    # DELETEME
+    
+    # if there are no slaves, set tables to [ "" ]
+    if len(tables) == 0:
+        tables.append("")
 
     panel = Panel(
         Columns(tables, expand=False),
@@ -95,7 +88,6 @@ def gen_slaves():
         border_style="bright_black",
         title_align="left",
         padding=(1, 1),
-        expand=False
     )
     return panel
 
@@ -114,7 +106,6 @@ def gen_info():
         border_style="bright_black",
         title_align="left",
         padding=(1, 1),
-        expand=False
     )
     return panel
 
