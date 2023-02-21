@@ -10,12 +10,13 @@ from rich.table import Table
 from rich.panel import Panel
 from rich.columns import Columns
 from rich.live import Live
+from rich.align import Align
 from datastructs import *
 
 
 console = Console()
 
-serial_port = "COM6"
+serial_port = ""
 serial_speed = 115200
 
 msg_tot = 0
@@ -44,9 +45,9 @@ def gen_ui():
         padding=(1, 2),
         height=terminal_height
     )
-    #print(panel)
-    #return Layout(panel)
-    return panel
+
+    return Layout(panel)
+    #return panel
 
 
 def gen_slaves():
@@ -128,7 +129,7 @@ if __name__ == "__main__":
     t.add_column("Description")
     for port in comports():
         t.add_row(str(port.device), str(port.description))
-    l = t#Layout(t)
+    l = Layout(Align(t, vertical="middle"))
     print(l)
 
     serial_port = Prompt.ask("Enter the serial port (Name)")
