@@ -1,57 +1,155 @@
-#from gevent import monkey
-#monkey.patch_all()
-
-
-
+import os
+import time
 import serial as pyserial
+from serial.tools.list_ports import comports
 import json
-import threading
+from rich.console import Console, Group
+from rich.table import Table
+from rich.panel import Panel
+from rich.columns import Columns
+from rich.live import Live
 from datastructs import *
 
 
-from tkinter import *
-from tkinter import ttk
-
-root = Tk()
-
-# frm = ttk.Frame(root, padding=10)
-# label_frame = ttk.LabelFrame(frm, text = "LABELFRAME WIDGET").grid(column=0, row=0)
-# frm.grid()
-
-frm = ttk.Frame(root, padding=10)
-frm.grid()
-
-# create a LabelFrame inside the frame
-lblfrm = ttk.LabelFrame(frm, text='My LabelFrame')
-lblfrm.grid()
-
-# add some content to the LabelFrame
-lbl = ttk.Label(lblfrm, text='This is my LabelFrame')
-lbl.grid()
-
-# ttk.Label(frm, text="Hello World!").grid(column=0, row=0)
-# ttk.Button(frm, text="Quit", command=root.destroy).grid(column=1, row=0)
-
+console = Console()
 
 serial_port = "COM6"
 serial_speed = 115200
 
-def serial_thread():
+msg_tot = 0
+
+slaves = { }
+
+print = console.print
+
+terminal_height = 30
+
+def gen_ui():
+
+    slaves_p = gen_slaves()
+    info_p = gen_info()
+
+    panel_group = Group(
+        slaves_p,
+        info_p,
+    )
+
+    panel = Panel(
+        panel_group,
+        title="[REDACTED]",
+        border_style="red",
+        title_align="left",
+        padding=(1, 2),
+        height=terminal_height
+    )
+    #print(panel)
+    return panel
+
+
+def gen_slaves():
+
+    if len(slaves) == 0:
+        panel = Panel(
+            "",
+            title="Slaves",
+            border_style="bright_black",
+            title_align="left",
+            padding=(1, 1),
+            expand=False
+        )
+        return panel
+
+    tables = []
+
+    for k in slaves:
+
+        v = slaves[k]
+        t = Table(show_header=True, header_style="bright_black", )
+
+        t.add_column("Sensor")
+        t.add_column("Value")
+
+        for s in v.sensors:
+            t.add_row(
+                s.name, str(s.val)
+            )
+
+        p = Panel.fit(
+            t,
+            title="ID: " + str(k),
+            border_style="gold1",
+            title_align="center",
+            padding=(1, 2),
+        )
+        tables.append(p)
+        tables.append(p)    # DELETEME
+
+    panel = Panel(
+        Columns(tables, expand=False),
+        title="Slaves",
+        border_style="bright_black",
+        title_align="left",
+        padding=(1, 1),
+        expand=False
+    )
+    return panel
+
+
+def gen_info():
+
+    t = Table(show_header=False, header_style="bright_black", )
+    t.add_row("Serial port", str(serial_port))
+    t.add_row("Serial speed", str(serial_speed))
+    t.add_row("#slaves", str(len(slaves)))
+    t.add_row("#msg received", str(msg_tot))
+
+    panel = Panel(
+        t,
+        title="Info",
+        border_style="bright_black",
+        title_align="left",
+        padding=(1, 1),
+        expand=False
+    )
+    return panel
+
+
+live = Live(gen_ui(), auto_refresh=False)
+
+
+if __name__ == "__main__":
+
+    t = Table(title="List of all serial ports")
+    t.add_column("Name")
+    t.add_column("Description")
+    for port in comports():
+        t.add_row(str(port.device), str(port.description))
+
+    print(t)
+
+    time.sleep(4)
+
+    print("Terminal height:")
+    print(os.get_terminal_size().lines)
+    if (os.get_terminal_size().lines) > 8:
+        terminal_height = os.get_terminal_size().lines
 
     print("SERIAL STARTING")
 
+    #print(gen_ui())
+    live.start()
+
     serial = pyserial.Serial(serial_port, serial_speed)
 
-    serial.write('rst\n'.encode())
-
-    slaves = { }
-    labels = { }
+    serial.write('upd\n'.encode())
 
     while True:
 
         str_msg = serial.readline()
         if '{'.encode() not in str_msg:
             continue
+
+        msg_tot += 1
         
         msg = json.loads(str_msg.decode())
         slave_msg = msg["msg"]
@@ -63,46 +161,11 @@ def serial_thread():
         elif slave_msg["type"] == 2:
             if msg["from"] in slaves:
                 slaves[msg["from"]].set_sensors(slave_msg["sensors"])
-                label_txt = ""
-                label_txt = ''
-                label_txt += 'name: {}\n'.format(slaves[msg["from"]].name)
-                label_txt += '\tsensors:\n'
-                for i in slaves[msg["from"]].sensors:
-                    label_txt += '\tname: {}\n'.format(i.name)
-                    label_txt += '\t\tvalue {}\n'.format(i.val)
-                labels[msg["from"]] = ttk.Label( root, text = label_txt.strip())
-                labels[msg["from"]].grid(column=(len(labels) % 2), row=(int(len(labels) / 2)), padx=10, pady=10)
-                print("\n\n\n\n\n\n\n\n")
-                for s in slaves:
-                    print(s)
         
         elif slave_msg["type"] == 9:
             if msg["from"] in slaves:
                 for s in slave_msg["sensors"]:
                     slaves[msg["from"]].sensors[s["index"]].val = s["val"]
-                label_txt = ""
-                label_txt = ''
-                label_txt += 'name: {}\n'.format(slaves[msg["from"]].name)
-                label_txt += '\tsensors:\n'
-                for i in slaves[msg["from"]].sensors:
-                    label_txt += '\tname: {}\n'.format(i.name)
-                    label_txt += '\t\tvalue {}\n'.format(i.val)
-                labels[msg["from"]].config(text=label_txt)
-                print("\n\n\n\n\n\n\n\n")
-                for k in slaves:
-                    slave = slaves[k]
-                    s = ''
-                    s += 'name: {}\n'.format(slave.name)
-                    s += '\tsensors:\n'
-                    for i in slave.sensors:
-                        s += '\tname: {}\n'.format(i.name)
-                        s += '\t\tvalue {}\n'.format(i.val)
-                    print(s.strip())
-
-
-if __name__ == "__main__":
-
-    ts = threading.Thread(target=serial_thread)
-    ts.start()
-
-    root.mainloop()
+            live.update(gen_ui())
+            live.refresh()
+            #print(gen_ui())

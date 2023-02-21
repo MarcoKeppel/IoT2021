@@ -23,7 +23,7 @@ class Slave():
         for i in sensors:
             print(i)
             s.append(
-                Sensor("")  # should be Sensor(i.name) but the name is not currently sent
+                Sensor(i["name"])
             )
         return s
     
