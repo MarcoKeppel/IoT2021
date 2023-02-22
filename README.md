@@ -15,13 +15,78 @@ It aims to be a very low cost solution, only requiring inexpensive microcontroll
 ## Table of contents
 
 * [General Information](#general-information)
+    * [Devices](#devices)
+    * [Protocol](#protocol)
+    * [GUI](#gui)
 * [Requirements](#requirements)
     * [Dependencies](#dependencies)
 * [Resources](#resources)
 
 ## General Information
 
-```TODO```: some technical details (root/node, net. comm. protocol, ...)
+The idea is to have a network able of handle communications indipendently from how many devices are connected and what kind of sensors are in each device. The entire project was developed with modularity in mind, keeping every part as generic as possible to allow a broader array of sensor and devices to be added laater on.
+
+PainlessMesh is used as a base for the custom network, it provides the foundamentals to allow all the devices to communicate with eachother, what's built on top of it is loosely based on DHCP and uses it's own simple protocol.
+
+
+### Devices
+Network devices can either be of role slave,  master or slave_master. What role the device will play is defined at startup when a configuration json file is loaded from memory (the file also contains a description of all the sensors connected to the device), only one master is allowed per network and the device covering that role is the one that will be communicating via serial with the host machine. If role is slave_master the device will operate both as a master and as a slave.
+
+The master device, after the initialization will keep looping thru the slaves and keep sending them keepalive messages to make sure they are still connected to the network, when a slave fails to respond it will be removed from list and flagged as inactive.
+Messages are handled asynchronously outside of the loop and the behaviour is dictated by the protocol.
+
+Slave devices internally work akin to a finite state machine. The device moves between 4 different states:
+
+- SS_INIT 0
+- SS_MASTER_REQ 1
+- SS_SENS_ADV 2 
+- SS_SENS_UPD 3
+
+SS_INIT is the initialization state where the file system is initialized and the configuration file is loaded from memory, parsed and variables set accordingly, done that it will quickly move to the next state.
+
+SS_MASTER_REQ when in this state the slave will intermittently broadcast on the network until it'll get a response from the master with its adress.
+
+SS_SENS_ADV once received a response from master the slave with move to this state and it'll send to master informations regarding its sensors
+
+SS_SENS_UPD when master responds with an ack the slave with move to this last and stable state where it'll be sending to masters updates on its sensors accoringly to the timing described in the configuration JSON file
+
+### Protocol
+The protocol is very simple but robust, it consists of 9 types of messages:
+
+- MSG_ROOT_ID_REQ 0
+- MSG_ROOT_ID_RESP 1
+- MSG_SENSOR_LIST_ADV 2 
+- MSG_SENSOR_LIST_ACK 3
+- MSG_SENSOR_VALUE_REQ 8
+- MSG_SENSOR_VALUE_RESP 9
+- MSG_KEEPALIVE 10
+- MSG_KEEPALIVE_ACK 11 
+- MSG_SLAVE_RESET 255
+
+MSG_ROOT_ID_REQ: broadcast from slave asking for master adress
+
+MSG_ROOT_ID_RESP: response from master containing address
+
+MSG_SENSOR_LIST_ADV: contains informations regarding slave's sensors 
+
+MSG_SENSOR_LIST_ACK: ack response of MSG_SENSOR_LIST_ADV
+
+MSG_SENSOR_VALUE_REQ: request from master to get updates on sensors (unused)
+
+MSG_SENSOR_VALUE_RESP: slave send to master the updated sensor values
+
+MSG_KEEPALIVE: master ask slave if it's still connected
+
+MSG_KEEPALIVE_ACK: response from slave stating it's still connected
+
+MSG_SLAVE_RESET: message from master to force the reset of a slave
+
+Keepalive messages are tailored differently for each slave. Slaves that contain sensors with high update rates will be queried more often.
+
+### GUI
+The user interface consists of a neatly formatted command line UI, the main goal of the interface is to present in an clean and presentable way the informations coming via serial from the master device, very little is actually stored in the host machine.
+
+
 
 ## Requirements
 
