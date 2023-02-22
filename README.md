@@ -28,6 +28,7 @@ The idea is to have a network able of handle communications indipendently from h
 
 PainlessMesh is used as a base for the custom network, it provides the foundamentals to allow all the devices to communicate with eachother, what's built on top of it is loosely based on DHCP and uses it's own simple protocol.
 
+![pmesh](https://raw.githubusercontent.com/MarcoKeppel/IoT2021/main/readme/ESP-MESH-painlessMesh-basic-example-ESP32-ESP8266.webp)
 
 ### Devices
 Network devices can either be of role slave,  master or slave_master. What role the device will play is defined at startup when a configuration json file is loaded from memory (the file also contains a description of all the sensors connected to the device), only one master is allowed per network and the device covering that role is the one that will be communicating via serial with the host machine. If role is slave_master the device will operate both as a master and as a slave.
@@ -41,6 +42,8 @@ Slave devices internally work akin to a finite state machine. The device moves b
 - SS_MASTER_REQ 1
 - SS_SENS_ADV 2 
 - SS_SENS_UPD 3
+
+![states](https://github.com/MarcoKeppel/IoT2021/blob/main/readme/Screenshot%20from%202023-02-22%2019-06-20.png)
 
 SS_INIT is the initialization state where the file system is initialized and the configuration file is loaded from memory, parsed and variables set accordingly, done that it will quickly move to the next state.
 
