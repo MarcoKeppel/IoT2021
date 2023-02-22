@@ -10,12 +10,13 @@ from rich.table import Table
 from rich.panel import Panel
 from rich.columns import Columns
 from rich.live import Live
+from rich.align import Align
 from datastructs import *
 
 
 console = Console()
 
-serial_port = "COM6"
+serial_port = ""
 serial_speed = 115200
 
 msg_tot = 0
@@ -40,27 +41,16 @@ def gen_ui():
         panel_group,
         title="[REDACTED]",
         border_style="red",
-        title_align="left",
+        title_align="center",
         padding=(1, 2),
         height=terminal_height
     )
-    #print(panel)
-    #return Layout(panel)
-    return panel
+
+    return Layout(panel)
+    #return panel
 
 
 def gen_slaves():
-
-    if len(slaves) == 0:
-        panel = Panel(
-            "",
-            title="Slaves",
-            border_style="bright_black",
-            title_align="left",
-            padding=(1, 2),
-            expand=False
-        )
-        return panel
 
     tables = []
 
@@ -86,7 +76,10 @@ def gen_slaves():
                 padding=(1, 1),
             )
             tables.append(p)
-            tables.append(p)    # DELETEME
+    
+    # if there are no slaves, set tables to [ "" ]
+    if len(tables) == 0:
+        tables.append("")
 
     panel = Panel(
         Columns(tables, expand=False),
@@ -94,7 +87,6 @@ def gen_slaves():
         border_style="bright_black",
         title_align="left",
         padding=(1, 1),
-        expand=False
     )
     return panel
 
@@ -113,7 +105,6 @@ def gen_info():
         border_style="bright_black",
         title_align="left",
         padding=(1, 1),
-        expand=False
     )
     return panel
 
@@ -128,7 +119,7 @@ if __name__ == "__main__":
     t.add_column("Description")
     for port in comports():
         t.add_row(str(port.device), str(port.description))
-    l = t#Layout(t)
+    l = Layout(Align(t, vertical="middle"))
     print(l)
 
     serial_port = Prompt.ask("Enter the serial port (Name)")
