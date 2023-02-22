@@ -139,10 +139,12 @@ if __name__ == "__main__":
 
     serial = pyserial.Serial(serial_port, serial_speed)
 
+    serial.reset_input_buffer()
+
     serial.write('upd\n'.encode())
 
     while True:
-
+            
         str_msg = serial.readline()
         if '{'.encode() not in str_msg:
             continue
@@ -150,6 +152,7 @@ if __name__ == "__main__":
         msg_tot += 1
         
         msg = json.loads(str_msg.decode())
+    
         slave_msg = msg["msg"]
         #print(msg)
         
