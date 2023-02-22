@@ -104,12 +104,12 @@ Following is a basic bill of materials:
 As for the software, this project is built using the Arduino core for ESP8266 (linked below). Some external libraries are also needed.
 - [PlatformIO](https://platformio.org/)
 - [Arduino core for ESP8266](https://github.com/esp8266/Arduino)
-- [painlessMesh](https://gitlab.com/painlessMesh/painlessMesh)
-    - [ArduinoJson](https://github.com/bblanchon/ArduinoJson)
+- [painlessMesh (1.5.0)](https://gitlab.com/painlessMesh/painlessMesh)
+    - [ArduinoJson (6.19.4)](https://github.com/bblanchon/ArduinoJson)
     - [TaskScheduler](https://github.com/arkhipenko/TaskScheduler)
     - [ESPAsyncTCP](https://github.com/me-no-dev/ESPAsyncTCP)
 
-    ```TODO```: write versions of the libraries (and possible incompatibilities)
+Recent changes of the ArdionoJson library have introduced incompatibilities with painlessMesh. Pay attention to the version you're using, and use those indicated above when in doubt.
 
 ## Resources
 
