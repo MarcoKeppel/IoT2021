@@ -131,4 +131,4 @@ Recent changes of the ArdionoJson library have introduced incompatibilities with
 
 ## Resources
 
-- Project video: [youtube.com/watch?v=kmNVzmr6Ldo](https://www.youtube.com/watch?v=kmNVzmr6Ldo)/```TODO```
+- Project video: [youtube.com/watch?v=kmNVzmr6Ldo](https://www.youtube.com/watch?v=kmNVzmr6Ldo)
