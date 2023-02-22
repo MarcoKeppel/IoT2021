@@ -11,6 +11,7 @@ It aims to be a very low cost solution, only requiring inexpensive microcontroll
 ## Table of contents
 
 * [General Information](#general-information)
+    * [Directory Structure](#directory-structure)
     * [Devices](#devices)
     * [Protocol](#protocol)
     * [GUI](#gui)
@@ -25,6 +26,23 @@ The idea is to have a network able of handle communications indipendently from h
 PainlessMesh is used as a base for the custom network, it provides the foundamentals to allow all the devices to communicate with eachother, what's built on top of it is loosely based on DHCP and uses it's own simple protocol.
 
 ![pmesh](https://raw.githubusercontent.com/MarcoKeppel/IoT2021/main/readme/ESP-MESH-painlessMesh-basic-example-ESP32-ESP8266.webp)
+
+### Directory Structure
+
+```
+.
+├── embedded                # PlatformIO project root
+│   ├── data
+│   │   └── config.json     # Slave config file
+│   ├── include             # .h files (datastructs, master/slave logic, ...)
+│   ├── src                 # main.cpp
+│   ├── platformio.ini      # PlatformIO config file
+│   └── ...
+├── redacted                # [REDACTED] tool
+│   ├── datastructs.py
+│   └── redacted.py
+└── README.md
+```
 
 ### Devices
 Network devices can either be of role slave,  master or slave_master. What role the device will play is defined at startup when a configuration json file is loaded from memory (the file also contains a description of all the sensors connected to the device), only one master is allowed per network and the device covering that role is the one that will be communicating via serial with the host machine. If role is slave_master the device will operate both as a master and as a slave.
