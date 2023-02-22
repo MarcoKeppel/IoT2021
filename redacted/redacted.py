@@ -76,7 +76,6 @@ def gen_slaves():
                 padding=(1, 1),
             )
             tables.append(p)
-            tables.append(p)    # DELETEME
     
     # if there are no slaves, set tables to [ "" ]
     if len(tables) == 0:
