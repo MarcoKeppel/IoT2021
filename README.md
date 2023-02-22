@@ -1,7 +1,3 @@
-```
-This readme is still a *work in progress*. ✨
-```
-
 # IoT 2021
 
 Exam project, "Embedded Software for the Internet of Things", UniTN.
@@ -90,13 +86,14 @@ The protocol is very simple but robust, it consists of 9 types of messages:
 Keepalive messages are tailored differently for each slave. Slaves that contain sensors with high update rates will be queried more often.
 
 ### GUI
-The user interface consists of a neatly formatted command line UI, the main goal of the interface is to present in an clean and presentable way the informations coming via serial from the master device, very little is actually stored in the host machine.
 
+```[REDACTED]``` is the graphical tool to check the status of the slaves. The user interface consists of a neatly formatted command line UI, the main goal of the interface is to present in an clean and presentable way the informations coming via serial from the master device, very little is actually stored in the host machine. It's a very simple tool, as this was not the main focus of this project.
 
+The graphics are implemented using [Rich](https://github.com/Textualize/rich)
 
 ## Requirements
 
-This solution is based on ESP8266 microcontrollers. ESP32s could (in theory) be used instead, but dependencies will likely change slightly (```TODO```: it's at least one of the dependencies of painlessMesh).
+This solution is based on ESP8266 microcontrollers. ESP32s could (in theory) be used instead, but dependencies will likely change slightly (At least one of the dependencies of painlessMesh is different, [AsyncTCP](https://github.com/me-no-dev/AsyncTCP) instead of ESPAsyncTCP).
 
 Following is a basic bill of materials:
 - ESP8266 (at least two)
@@ -116,4 +113,4 @@ Recent changes of the ArdionoJson library have introduced incompatibilities with
 
 ## Resources
 
-- Project video: [youtube.com]()/```TODO```
+- Project video: [youtube.com/watch?v=kmNVzmr6Ldo](https://www.youtube.com/watch?v=kmNVzmr6Ldo)/```TODO```
