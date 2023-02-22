@@ -95,7 +95,7 @@ typedef struct slave_data
     void onReceive(uint32_t from, const String &msg_serialized)
     {
 
-        StaticJsonDocument<512> msg;
+        StaticJsonDocument<STATIC_JSON_DOC_SIZE> msg;
         deserializeJson(msg, msg_serialized);
 
         uint8_t type = (uint8_t)msg["type"];
@@ -320,6 +320,9 @@ typedef struct slave_data
             sensors[sensors_n].val_type = (sensor_val_type_t)s["val_type"];
             sensors[sensors_n].update_rate = (uint8_t)s["update_rate"];
             sensors[sensors_n].pin = (uint8_t)s["pin"];
+
+            // Set pin as input
+            pinMode((uint8_t)s["pin"], INPUT);
 
             // stores fastest update rate
             if (sensors[sensors_n].update_rate < tmpMinUpdateRate)

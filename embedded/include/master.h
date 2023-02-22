@@ -92,7 +92,7 @@ typedef struct master_data
     void onReceive(uint32_t from, const String &msg_serialized)
     {
 
-        StaticJsonDocument<512> msg;
+        StaticJsonDocument<STATIC_JSON_DOC_SIZE> msg;
         deserializeJson(msg, msg_serialized);
 
         uint8_t type = (uint8_t)msg["type"];

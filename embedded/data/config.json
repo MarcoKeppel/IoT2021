@@ -1,22 +1,38 @@
 {
-    "name": "device_name_0",
+    "name": "dip_switches",
     "role": 1,
     "sensors": [
         {
-            "name": "sensor_name_0-0",
+            "name": "int_0",
             "type": 1,
             "val_type": 3,
-            "update_rate": 5,
+            "update_rate": 3,
             "pin": 14,
             "timeout_period": 10
         },
         {
-            "name": "sensor_name_0-1",
-            "type": 0,
-            "val_type": 1,
-            "update_rate": 2,
-            "pin": 17,
-            "timeout_period": 50
+            "name": "int_1",
+            "type": 1,
+            "val_type": 3,
+            "update_rate": 3,
+            "pin": 12,
+            "timeout_period": 10
+        },
+        {
+            "name": "int_2",
+            "type": 1,
+            "val_type": 3,
+            "update_rate": 5,
+            "pin": 13,
+            "timeout_period": 10
+        },
+        {
+            "name": "int_3",
+            "type": 1,
+            "val_type": 3,
+            "update_rate": 6,
+            "pin": 4,
+            "timeout_period": 10
         }
     ]
 }
