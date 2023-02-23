@@ -17,6 +17,7 @@ It aims to be a very low cost solution, only requiring inexpensive microcontroll
     * [GUI](#gui)
 * [Requirements](#requirements)
     * [Dependencies](#dependencies)
+* [Building and Running](#building-and-running)
 * [Resources](#resources)
 
 ## General Information
@@ -127,7 +128,17 @@ As for the software, this project is built using the Arduino core for ESP8266 (l
     - [TaskScheduler](https://github.com/arkhipenko/TaskScheduler)
     - [ESPAsyncTCP](https://github.com/me-no-dev/ESPAsyncTCP)
 
+Dependencies for ```[REDACTED]``` are:
+- [pySerial](https://github.com/pyserial/pyserial)
+- [Rich](https://github.com/Textualize/rich)
+
 Recent changes of the ArdionoJson library have introduced incompatibilities with painlessMesh. Pay attention to the version you're using, and use those indicated above when in doubt. When using PlatformIO to manage the dependencies, there should not be any problem as dependencies of dependencies are managed automatically.
+
+## Building and Running
+
+To build the project, one should have PlatformIO installed, as well as the Arduino framework and the necessary board definition(s) (in our case, ESP8266 nodemcuv2).
+
+To flash it, and to upload the configuration data to the ESP filesystem, simply use the included tools in PlatformIO.
 
 ## Resources
 
