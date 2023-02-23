@@ -129,6 +129,7 @@ As for the software, this project is built using the Arduino core for ESP8266. S
     - [ESPAsyncTCP](https://github.com/me-no-dev/ESPAsyncTCP)
 
 Dependencies for ```[REDACTED]``` are:
+- [Python 3](https://www.python.org/downloads/)
 - [pySerial](https://github.com/pyserial/pyserial)
 - [Rich](https://github.com/Textualize/rich)
 
@@ -139,6 +140,8 @@ Recent changes of the ArdionoJson library have introduced incompatibilities with
 To build the project, one should have PlatformIO installed, as well as the Arduino framework and the necessary board definition(s) (in our case, ESP8266 nodemcuv2).
 
 To flash it, and to upload the configuration data to the ESP filesystem, simply use the included tools in PlatformIO.
+
+To run ```[REDACTED]```, simply execute redacted.py via ```python redacted.py```
 
 ## Resources
 
