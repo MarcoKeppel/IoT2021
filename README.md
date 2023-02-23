@@ -141,7 +141,7 @@ To build the project, one should have PlatformIO installed, as well as the Ardui
 
 To flash it, and to upload the configuration data to the ESP filesystem, simply use the included tools in PlatformIO.
 
-To run ```[REDACTED]```, simply execute redacted.py via ```python redacted.py```
+To run ```[REDACTED]```, simply execute redacted.py: ```python redacted.py```
 
 ## Resources
 
