@@ -32,7 +32,7 @@ PainlessMesh is used as a base for the custom network, it provides the foundamen
 ```
 .
 ├── embedded                # PlatformIO project root
-│   ├── data
+│   ├── data                # Data to be uploaded to the ESP flash storage
 │   │   └── config.json     # Slave config file
 │   ├── include             # .h files (datastructs, master/slave logic, ...)
 │   ├── src                 # main.cpp
