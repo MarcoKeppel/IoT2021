@@ -1,4 +1,4 @@
-# IoT 2021
+# Dynamic Autonomous Sensor Hub (DASH)
 
 Exam project, "Embedded Software for the Internet of Things", UniTN.
 
