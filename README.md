@@ -120,7 +120,7 @@ Following is a basic bill of materials:
 
 ### Dependencies
 
-As for the software, this project is built using the Arduino core for ESP8266 (linked below). Some external libraries are also needed.
+As for the software, this project is built using the Arduino core for ESP8266. Some external libraries are also needed.
 - [PlatformIO](https://platformio.org/)
 - [Arduino core for ESP8266](https://github.com/esp8266/Arduino)
 - [painlessMesh (1.5.0)](https://gitlab.com/painlessMesh/painlessMesh)
